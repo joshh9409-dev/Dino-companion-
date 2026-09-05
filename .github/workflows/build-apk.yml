@@ -28,6 +28,10 @@ jobs:
         run: |
           echo "android.useAndroidX=true" > gradle.properties
 
+      - name: Fix AndroidManifest
+        run: |
+          sed -i 's/ android:protectionLevel="signature|privileged|developmentTools"//' app/src/main/AndroidManifest.xml
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
