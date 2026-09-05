@@ -20,27 +20,22 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Extract fixed project
+      - name: Find and extract Dino project
+        shell: bash
         run: |
-          unzip -o DinoCompanion-Fixed-Project.zip -d .
-          echo "Project extracted"
-          ls -la
-          ls -la app
-
-      - name: Configure Gradle
-        run: |
-          echo "android.useAndroidX=true" > gradle.properties
-          echo "org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8" >> gradle.properties
-
-      - name: Fix Kotlin source
-        run: |
-          sed -i '/^package com.example.dinocompanion/a import android.content.pm.ServiceInfo' app/src/main/java/com/example/dinocompanion/DinoOverlayService.kt
-
-      - name: Force Java and Kotlin to JVM 17
-        run: |
-          sed -i 's/JavaVersion.VERSION_1_8/JavaVersion.VERSION_17/g' app/build.gradle.kts
-          sed -i 's/jvmTarget = "1.8"/jvmTarget = "17"/g' app/build.gradle.kts
-          sed -i "s/jvmTarget = '1.8'/jvmTarget = '17'/g" app/build.gradle.kts
+          set -e
+          echo 'Files in repository root:'
+          ls -lah
+          ZIP_FILE=$(find . -maxdepth 2 -type f -iname 'DinoCompanion*.zip' -print -quit)
+          if [ -z "$ZIP_FILE" ]; then
+            echo 'ERROR: DinoCompanion ZIP not found.'
+            echo 'Upload the DinoCompanion project ZIP to the repository root and commit it.'
+            exit 1
+          fi
+          echo "Using project archive: $ZIP_FILE"
+          unzip -o "$ZIP_FILE" -d .
+          echo 'Extracted project files:'
+          ls -lah
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -48,8 +43,7 @@ jobs:
           gradle-version: '8.11'
 
       - name: Build APK
-        run: |
-          gradle clean assembleDebug
+        run: gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
