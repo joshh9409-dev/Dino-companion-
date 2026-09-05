@@ -32,6 +32,11 @@ jobs:
         run: |
           sed -i 's/ android:protectionLevel="signature|privileged|developmentTools"//' app/src/main/AndroidManifest.xml
 
+      - name: Align Java and Kotlin JVM targets
+        run: |
+          sed -i 's/JavaVersion.VERSION_1_8/JavaVersion.VERSION_17/g' app/build.gradle.kts
+          sed -i 's/jvmTarget = "1.8"/jvmTarget = "17"/g' app/build.gradle.kts
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
