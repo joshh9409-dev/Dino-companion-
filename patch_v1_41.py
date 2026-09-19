@@ -603,12 +603,15 @@ main_path = root / "app/src/main/java/com/example/dinocompanion/MainActivity.kt"
 m = main_path.read_text(encoding="utf-8")
 
 # Make the Canvas UI responsive without modifying Android View width/height properties.
-# Add scaled coordinates directly inside DinoGameView.
-body = body.replace("{", """{
+start = m.index("class DinoGameView")
+head = m[:start]
+body = m[start:]
+class_open = body.index("{") + 1
+body = body[:class_open] + """
     private val uiScale: Float get() = kotlin.math.min(getWidth().toFloat() / 420f, getHeight().toFloat() / 933f)
     private val uiWidth: Float get() = getWidth().toFloat() / uiScale
     private val uiHeight: Float get() = getHeight().toFloat() / uiScale
-""", 1)
+""" + body[class_open:]
 
 old_draw = '''    override fun onDraw(c: Canvas) {
         drawBackground(c)
