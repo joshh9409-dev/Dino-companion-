@@ -588,11 +588,326 @@ values.mkdir(parents=True, exist_ok=True)
 g = root / "app/build.gradle.kts"
 s = g.read_text(encoding="utf-8")
 s = re.sub(r'namespace\s*=\s*"[^"]+"','namespace = "com.example.dinocompanion"',s)
-s = re.sub(r'applicationId\s*=\s*"[^"]+"','applicationId = "com.example.dinocompanion.v142"',s)
-s = re.sub(r'versionCode\s*=\s*\d+','versionCode = 45',s)
-s = re.sub(r'versionName\s*=\s*"[^"]+"','versionName = "1.42"',s)
+s = re.sub(r'applicationId\s*=\s*"[^"]+"','applicationId = "com.example.dinocompanion.v143"',s)
+s = re.sub(r'versionCode\s*=\s*\d+','versionCode = 46',s)
+s = re.sub(r'versionName\s*=\s*"[^"]+"','versionName = "1.43"',s)
 s = re.sub(r'\s*implementation\("androidx\.appcompat:appcompat:[^"]+"\)','',s)
 if 'implementation("androidx.appcompat:appcompat:1.7.0")' not in s:
     s=s.replace('dependencies {', 'dependencies {\n    implementation("androidx.appcompat:appcompat:1.7.0")')
 g.write_text(s,encoding="utf-8")
 print("Dino Companion v1.42 complete build generated")
+
+
+# ---------- v1.43 POLISH / RESPONSIVE / OVERLAY PASS ----------
+main_path = root / "app/src/main/java/com/example/dinocompanion/MainActivity.kt"
+m = main_path.read_text(encoding="utf-8")
+
+# Make the Canvas UI responsive. The original UI used raw pixels, which made it occupy
+# only the top portion of high-resolution phones.
+start = m.index("class DinoGameView")
+head = m[:start]
+body = m[start:]
+body = re.sub(r"\bheight\b", "uiHeight", body)
+body = re.sub(r"\bwidth\b", "uiWidth", body)
+
+needle = '    private val dino: DinoDef get() = dinos.firstOrNull { it.id == selectedId } ?: dinos[0]'
+props = '''    private val dino: DinoDef get() = dinos.firstOrNull { it.id == selectedId } ?: dinos[0]
+    private val uiScale: Float get() = min(super.width.toFloat() / 420f, super.height.toFloat() / 933f)
+    private val uiWidth: Float get() = super.width.toFloat() / uiScale
+    private val uiHeight: Float get() = super.height.toFloat() / uiScale'''
+body = body.replace(needle, props)
+
+old_draw = '''    override fun onDraw(c: Canvas) {
+        drawBackground(c)
+        when (page) {
+            Page.HOME -> drawHome(c)
+            Page.CHOOSE -> drawChoose(c)
+            Page.CARE -> drawCare(c)
+            Page.PLAY -> drawPlay(c)
+            Page.SHOP -> drawShop(c)
+            Page.INVENTORY -> drawInventory(c)
+            Page.SETTINGS -> drawSettings(c)
+        }
+    }'''
+new_draw = '''    override fun onDraw(c: Canvas) {
+        c.save()
+        c.scale(uiScale, uiScale)
+        drawBackground(c)
+        when (page) {
+            Page.HOME -> drawHome(c)
+            Page.CHOOSE -> drawChoose(c)
+            Page.CARE -> drawCare(c)
+            Page.PLAY -> drawPlay(c)
+            Page.SHOP -> drawShop(c)
+            Page.INVENTORY -> drawInventory(c)
+            Page.SETTINGS -> drawSettings(c)
+        }
+        c.restore()
+    }'''
+body = body.replace(old_draw, new_draw)
+
+# Touch coordinates must use the same responsive coordinate system.
+body = body.replace('pressX=e.x;pressY=e.y', 'pressX=e.x/uiScale;pressY=e.y/uiScale')
+body = body.replace('val dx=e.x-pressX', 'val dx=e.x/uiScale-pressX')
+body = body.replace('handleTap(e.x,e.y)', 'handleTap(e.x/uiScale,e.y/uiScale)')
+
+# Home gets quick Inventory/Settings access.
+home_old = '''        text(c,"DINO COMPANION",uiWidth/2f,48f,29f,Color.WHITE,true,true)
+        text(c,"Your little world, always with you",uiWidth/2f,70f,12f,Color.WHITE,true)'''
+home_new = '''        text(c,"DINO COMPANION",uiWidth/2f,48f,29f,Color.WHITE,true,true)
+        text(c,"Your little world, always with you",uiWidth/2f,70f,12f,Color.WHITE,true)
+        button(c,12f,16f,78f,58f,"INV","",Color.argb(150,35,100,130))
+        button(c,342f,16f,408f,58f,"SET","",Color.argb(150,35,100,130))'''
+body = body.replace(home_old, home_new)
+
+# Put the Dino into the Care screen so it isn't just a list of bars.
+care_old = '''        stat(c,"Bond",bond,325f,Color.rgb(174,101,190))
+        button(c,25f,430f,uiWidth/2f-10,505f,"FEED","●",Color.rgb(93,164,92))'''
+care_new = '''        stat(c,"Bond",bond,325f,Color.rgb(174,101,190))
+        drawDino(c,uiWidth/2f,400f,.68f)
+        button(c,25f,455f,uiWidth/2f-10,530f,"FEED","●",Color.rgb(93,164,92))'''
+body = body.replace(care_old, care_new)
+body = body.replace('button(c,uiWidth/2f+10,430f,uiWidth-25f,505f,"CLEAN"', 'button(c,uiWidth/2f+10,455f,uiWidth-25f,530f,"CLEAN"')
+body = body.replace('button(c,25f,525f,uiWidth/2f-10,600f,"REST"', 'button(c,25f,550f,uiWidth/2f-10,625f,"REST"')
+body = body.replace('button(c,uiWidth/2f+10,525f,uiWidth-25f,600f,"PET"', 'button(c,uiWidth/2f+10,550f,uiWidth-25f,625f,"PET"')
+body = body.replace('text(c,"Food: "+food+"   •   Toys: "+toys,uiWidth/2f,635f', 'text(c,"Food: "+food+"   •   Toys: "+toys,uiWidth/2f,665f')
+
+# Adjust Care touch zones to match.
+body = body.replace('y in 425f..515f&&x<uiWidth/2->feed()', 'y in 450f..540f&&x<uiWidth/2->feed()')
+body = body.replace('y in 425f..515f->clean()', 'y in 450f..540f->clean()')
+body = body.replace('y in 520f..610f&&x<uiWidth/2->rest()', 'y in 545f..635f&&x<uiWidth/2->rest()')
+body = body.replace('y in 520f..610f->pet()', 'y in 545f..635f->pet()')
+
+# Bigger, richer Dino rendering.
+body = body.replace('190f*scale/bmp.width,190f*scale/bmp.height', '250f*scale/bmp.width,250f*scale/bmp.height')
+body = body.replace('paint.color=Color.argb(70,20,50,50)\n        c.drawOval', 'paint.color=Color.argb(70,20,50,50)\n        paint.alpha=255\n        c.drawOval')
+
+# Home navigation for the new quick buttons.
+old_home_touch = '''            Page.HOME -> {
+                val h=uiHeight.toFloat()
+                when{
+                    y>h-115 -> page=if(x<uiWidth/2)Page.CARE else Page.PLAY
+                    y>h-195 -> page=if(x<uiWidth/2)Page.CHOOSE else Page.SHOP
+                    y in 500f..595f -> page=Page.INVENTORY
+                }
+            }'''
+new_home_touch = '''            Page.HOME -> {
+                val h=uiHeight.toFloat()
+                when{
+                    x < 90f && y < 80f -> page=Page.INVENTORY
+                    x > uiWidth-90f && y < 80f -> page=Page.SETTINGS
+                    y>h-115 -> page=if(x<uiWidth/2)Page.CARE else Page.PLAY
+                    y>h-195 -> page=if(x<uiWidth/2)Page.CHOOSE else Page.SHOP
+                }
+            }'''
+body = body.replace(old_home_touch, new_home_touch)
+
+# Version label.
+body = body.replace("Dino Companion 1.41", "Dino Companion 1.43")
+
+m = head + body
+main_path.write_text(m, encoding="utf-8")
+
+# Replace the overlay service with a robust draggable floating companion and compact menu.
+overlay_path = root / "app/src/main/java/com/example/dinocompanion/DinoOverlayService.kt"
+overlay = r'''
+package com.example.dinocompanion
+
+import android.app.*
+import android.content.*
+import android.content.pm.ServiceInfo
+import android.graphics.*
+import android.os.*
+import android.provider.Settings
+import android.view.*
+import android.widget.Toast
+import kotlin.math.abs
+
+class DinoOverlayService : Service() {
+    private var wm: WindowManager? = null
+    private var view: OverlayView? = null
+    private var params: WindowManager.LayoutParams? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        val id = "dino_companion"
+        if (Build.VERSION.SDK_INT >= 26) {
+            getSystemService(NotificationManager::class.java).createNotificationChannel(
+                NotificationChannel(id, "Dino Companion", NotificationManager.IMPORTANCE_LOW)
+            )
+        }
+        val n = if (Build.VERSION.SDK_INT >= 26)
+            Notification.Builder(this, id)
+                .setSmallIcon(android.R.drawable.ic_menu_compass)
+                .setContentTitle("Dino Companion")
+                .setContentText("Your Dino is with you")
+                .setOngoing(true).build()
+        else Notification.Builder(this)
+            .setSmallIcon(android.R.drawable.ic_menu_compass)
+            .setContentTitle("Dino Companion")
+            .setContentText("Your Dino is with you")
+            .setOngoing(true).build()
+
+        if (Build.VERSION.SDK_INT >= 29)
+            startForeground(22, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        else startForeground(22, n)
+
+        if (Settings.canDrawOverlays(this)) showOverlay()
+    }
+
+    private fun showOverlay() {
+        wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        view = OverlayView(this)
+        val type = if (Build.VERSION.SDK_INT >= 26)
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        else WindowManager.LayoutParams.TYPE_PHONE
+
+        val d = resources.displayMetrics.density
+        params = WindowManager.LayoutParams(
+            (220 * d).toInt(), (275 * d).toInt(), type,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT
+        )
+        params!!.gravity = Gravity.TOP or Gravity.END
+        params!!.x = (10 * d).toInt()
+        params!!.y = (145 * d).toInt()
+
+        try { wm?.addView(view, params) } catch (_: Exception) {}
+    }
+
+    fun moveOverlay(dx: Float, dy: Float) {
+        val p = params ?: return
+        p.x = (p.x - dx).coerceAtLeast(0f).toInt()
+        p.y = (p.y + dy).coerceIn(0f, resources.displayMetrics.heightPixels * .8f).toInt()
+        try { view?.let { wm?.updateViewLayout(it, p) } } catch (_: Exception) {}
+    }
+
+    fun openMain() {
+        startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+
+    fun hideOverlay() {
+        getSharedPreferences("dino_companion", MODE_PRIVATE).edit().putBoolean("overlay", false).apply()
+        stopSelf()
+    }
+
+    fun showInfo() {
+        Toast.makeText(this, "Dino Companion overlay • drag me to move", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroy() {
+        try { view?.let { wm?.removeView(it) } } catch (_: Exception) {}
+        view = null
+        super.onDestroy()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+}
+
+class OverlayView(private val service: DinoOverlayService) : View(service) {
+    private val prefs = service.getSharedPreferences("dino_companion", MODE_PRIVATE)
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private var tick = 0
+    private var menu = false
+    private var downX = 0f
+    private var downY = 0f
+    private var lastX = 0f
+    private var lastY = 0f
+    private var moved = false
+
+    init {
+        post(object : Runnable {
+            override fun run() {
+                tick++
+                invalidate()
+                postDelayed(this, 180)
+            }
+        })
+    }
+
+    override fun onDraw(c: Canvas) {
+        val density = resources.displayMetrics.density
+        val w = width.toFloat()
+        val h = height.toFloat()
+        val species = prefs.getString("species", "trex") ?: "trex"
+        val stage = prefs.getInt("stage", 1)
+        var id = resources.getIdentifier(
+            species + "_stage" + stage + "_f" + (tick % 3 + 1),
+            "drawable", packageName
+        )
+        if (id == 0) id = resources.getIdentifier(
+            species + "_stage" + stage, "drawable", packageName
+        )
+
+        paint.alpha = 255
+        paint.color = Color.argb(75, 0, 0, 0)
+        c.drawOval(w*.18f, h*.67f, w*.82f, h*.76f, paint)
+
+        if (id != 0) {
+            val b = BitmapFactory.decodeResource(resources, id)
+            if (b != null) {
+                val box = RectF(w*.08f, h*.04f, w*.92f, h*.72f)
+                c.drawBitmap(b, null, box, paint)
+                b.recycle()
+            }
+        }
+
+        if (menu) {
+            paint.color = Color.argb(235, 25, 70, 92)
+            c.drawRoundRect(w*.03f, h*.76f, w*.97f, h*.97f, 18f*density, 18f*density, paint)
+            paint.color = Color.WHITE
+            paint.textAlign = Paint.Align.CENTER
+            paint.textSize = 12f*density
+            paint.typeface = Typeface.DEFAULT_BOLD
+            c.drawText("MENU", w*.19f, h*.89f, paint)
+            c.drawText("HIDE", w*.50f, h*.89f, paint)
+            c.drawText("INFO", w*.81f, h*.89f, paint)
+        }
+    }
+
+    override fun onTouchEvent(e: MotionEvent): Boolean {
+        when (e.actionMasked) {
+            MotionEvent.ACTION_DOWN -> {
+                downX = e.rawX
+                downY = e.rawY
+                lastX = downX
+                lastY = downY
+                moved = false
+                return true
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val dx = e.rawX - lastX
+                val dy = e.rawY - lastY
+                if (abs(e.rawX - downX) > 8 || abs(e.rawY - downY) > 8) moved = true
+                service.moveOverlay(dx, dy)
+                lastX = e.rawX
+                lastY = e.rawY
+                return true
+            }
+            MotionEvent.ACTION_UP -> {
+                if (!moved) {
+                    val density = resources.displayMetrics.density
+                    val yy = e.y / density
+                    if (menu && yy > 0.76f*height/density) {
+                        val xx = e.x / width
+                        when {
+                            xx < .34f -> service.openMain()
+                            xx > .66f -> service.showInfo()
+                            else -> service.hideOverlay()
+                        }
+                    } else {
+                        menu = !menu
+                        invalidate()
+                    }
+                }
+                return true
+            }
+        }
+        return true
+    }
+}
+'''
+overlay_path.write_text(overlay, encoding="utf-8")
+
+print("Dino Companion v1.43 polished build generated")
