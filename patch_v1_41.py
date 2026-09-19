@@ -589,8 +589,8 @@ g = root / "app/build.gradle.kts"
 s = g.read_text(encoding="utf-8")
 s = re.sub(r'namespace\s*=\s*"[^"]+"','namespace = "com.example.dinocompanion"',s)
 s = re.sub(r'applicationId\s*=\s*"[^"]+"','applicationId = "com.example.dinocompanion.v143"',s)
-s = re.sub(r'versionCode\s*=\s*\d+','versionCode = 46',s)
-s = re.sub(r'versionName\s*=\s*"[^"]+"','versionName = "1.43"',s)
+s = re.sub(r'versionCode\s*=\s*\d+','versionCode = 47',s)
+s = re.sub(r'versionName\s*=\s*"[^"]+"','versionName = "1.44"',s)
 s = re.sub(r'\s*implementation\("androidx\.appcompat:appcompat:[^"]+"\)','',s)
 if 'implementation("androidx.appcompat:appcompat:1.7.0")' not in s:
     s=s.replace('dependencies {', 'dependencies {\n    implementation("androidx.appcompat:appcompat:1.7.0")')
@@ -699,12 +699,12 @@ new_home_touch = '''            Page.HOME -> {
 body = body.replace(old_home_touch, new_home_touch)
 
 # Version label.
-body = body.replace("Dino Companion 1.41", "Dino Companion 1.43")
+body = body.replace("Dino Companion 1.41", "Dino Companion 1.44")
 
 # Convert every remaining Canvas drawing/touch width/height reference to the 420x933 logical coordinate space.
 # getWidth()/getHeight() remain untouched because the regex matches whole words only.
-body = re.sub(r"\\bwidth\\b", "uiWidth", body)
-body = re.sub(r"\\bheight\\b", "uiHeight", body)
+body = re.sub(r"\bwidth\b", "uiWidth", body)
+body = re.sub(r"\bheight\b", "uiHeight", body)
 
 m = head + body
 main_path.write_text(m, encoding="utf-8")
