@@ -1,4 +1,4 @@
-name: Build Dino Companion v1.31
+name: Build Dino Companion v1.32
 
 on:
   workflow_dispatch:
@@ -34,6 +34,7 @@ jobs:
           unzip -o "$ZIP_FILE" -d .
           test -f app/build.gradle.kts
           test -f app/src/main/AndroidManifest.xml
+          python3 patch_v1_32.py
           rm -f app/src/main/res/layout/activity_main.xml
 
       - name: Set up Gradle
@@ -47,5 +48,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: DinoCompanion-v1.31-debug
+          name: DinoCompanion-v1.32-debug
           path: app/build/outputs/apk/debug/*.apk
