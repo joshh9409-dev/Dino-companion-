@@ -568,5 +568,7 @@ s = re.sub(r'applicationId\s*=\s*"[^"]+"','applicationId = "com.example.dinocomp
 s = re.sub(r'versionCode\s*=\s*\d+','versionCode = 45',s)
 s = re.sub(r'versionName\s*=\s*"[^"]+"','versionName = "1.42"',s)
 s = re.sub(r'\s*implementation\("androidx\.appcompat:appcompat:[^"]+"\)','',s)
+if 'implementation("androidx.appcompat:appcompat:1.7.0")' not in s:
+    s=s.replace('dependencies {', 'dependencies {\n    implementation("androidx.appcompat:appcompat:1.7.0")')
 g.write_text(s,encoding="utf-8")
 print("Dino Companion v1.42 complete build generated")
