@@ -6,6 +6,16 @@ root = Path(".")
 pkg = root / "app/src/main/java/com/example/dinocompanion"
 main = pkg / "MainActivity.kt"
 
+# Make this a genuinely isolated launcher test. The source archive contains
+# legacy Activities/services/classes that are irrelevant to this diagnostic and
+# can introduce Kotlin compilation failures even though the launcher Activity
+# itself is valid.
+if pkg.exists():
+    for p in pkg.rglob("*.kt"):
+        if p.resolve() != main.resolve():
+            p.unlink()
+
+main.parent.mkdir(parents=True, exist_ok=True)
 main.write_text(r'''package com.example.dinocompanion
 
 import android.app.Activity
@@ -65,6 +75,7 @@ manifest.write_text(r'''<manifest xmlns:android="http://schemas.android.com/apk/
 ''', encoding="utf-8")
 
 themes = root / "app/src/main/res/values/themes.xml"
+themes.parent.mkdir(parents=True, exist_ok=True)
 themes.write_text(r'''<resources>
     <style name="Theme.DinoCompanion" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
@@ -76,9 +87,7 @@ themes.write_text(r'''<resources>
 </resources>
 ''', encoding="utf-8")
 
-# The original project contains legacy XML layouts using percentage dimensions
-# such as 88%, which Android AAPT rejects. This clean launch test uses a fully
-# programmatic Activity, so remove the unused legacy layout resources entirely.
+# Remove legacy XML layouts. The diagnostic Activity is entirely programmatic.
 layout_dir = root / "app/src/main/res/layout"
 if layout_dir.exists():
     shutil.rmtree(layout_dir)
@@ -89,6 +98,6 @@ s = re.sub(r'namespace\s*=\s*"[^"]+"', 'namespace = "com.example.dinocompanion"'
 s = re.sub(r'applicationId\s*=\s*"[^"]+"', 'applicationId = "com.example.dinocompanion.clean"', s)
 s = re.sub(r'versionCode\s*=\s*\d+', 'versionCode = 43', s)
 s = re.sub(r'versionName\s*=\s*"[^"]+"', 'versionName = "1.40"', s)
-# Preserve the original dependency block. The previous version accidentally removed it.
 g.write_text(s, encoding="utf-8")
-print("v1.40 clean package patch corrected: legacy layout resources removed")
+
+print("v1.40 clean package: isolated MainActivity, manifest and resources")
