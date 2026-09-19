@@ -701,7 +701,10 @@ body = body.replace(old_home_touch, new_home_touch)
 # Version label.
 body = body.replace("Dino Companion 1.41", "Dino Companion 1.43")
 
-# Convert every remaining Canvas drawing/touch width/height reference to the 420x933 logical coordinate space.\n# getWidth()/getHeight() remain untouched because the regex matches whole words only.\nbody = re.sub(r"\\bwidth\\b", "uiWidth", body)\nbody = re.sub(r"\\bheight\\b", "uiHeight", body)
+# Convert every remaining Canvas drawing/touch width/height reference to the 420x933 logical coordinate space.
+# getWidth()/getHeight() remain untouched because the regex matches whole words only.
+body = re.sub(r"\\bwidth\\b", "uiWidth", body)
+body = re.sub(r"\\bheight\\b", "uiHeight", body)
 
 m = head + body
 main_path.write_text(m, encoding="utf-8")
