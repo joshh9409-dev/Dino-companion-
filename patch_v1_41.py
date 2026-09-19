@@ -66,6 +66,8 @@ class MainActivity : Activity() {
         }
         val toggle = DialogInterface.OnClickListener { _, _ ->
             if (!Settings.canDrawOverlays(this)) {
+                game.overlayOn = true
+                game.save()
                 startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + packageName)))
             } else {
                 game.overlayOn = !game.overlayOn
