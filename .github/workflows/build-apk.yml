@@ -1,4 +1,4 @@
-name: Build Dino Companion Beta
+name: Build Dino Companion v1.31
 
 on:
   workflow_dispatch:
@@ -20,22 +20,21 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Find and extract Dino project
+      - name: Find and extract newest Dino project
         shell: bash
         run: |
-          set -e
-          echo 'Files in repository root:'
-          ls -lah
-          ZIP_FILE=$(find . -maxdepth 2 -type f -iname 'DinoCompanion*.zip' -print -quit)
+          set -euo pipefail
+          ZIP_FILE=$(find . -maxdepth 1 -type f -iname 'DinoCompanion*.zip' -printf '%f\n' | sort -V | tail -n 1)
           if [ -z "$ZIP_FILE" ]; then
-            echo 'ERROR: DinoCompanion ZIP not found.'
-            echo 'Upload the DinoCompanion project ZIP to the repository root and commit it.'
+            echo "ERROR: No DinoCompanion project ZIP found."
             exit 1
           fi
           echo "Using project archive: $ZIP_FILE"
+          rm -rf app build.gradle.kts settings.gradle.kts gradle.properties README.md BUILD_VERSION.txt
           unzip -o "$ZIP_FILE" -d .
-          echo 'Extracted project files:'
-          ls -lah
+          test -f app/build.gradle.kts
+          test -f app/src/main/AndroidManifest.xml
+          rm -f app/src/main/res/layout/activity_main.xml
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -43,10 +42,10 @@ jobs:
           gradle-version: '8.11'
 
       - name: Build APK
-        run: gradle assembleDebug
+        run: gradle assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: DinoCompanion-debug
+          name: DinoCompanion-v1.31-debug
           path: app/build/outputs/apk/debug/*.apk
