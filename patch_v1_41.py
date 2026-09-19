@@ -18,7 +18,7 @@ package com.example.dinocompanion
 import android.Manifest
 import android.app.*
 import android.content.*
-import android.content.pm.PackageManager
+import android.content.pm.PackageManager\nimport android.content.pm.ServiceInfo
 import android.graphics.*
 import android.net.Uri
 import android.os.*
@@ -485,7 +485,7 @@ class DinoOverlayService : Service() {
         val n=if(Build.VERSION.SDK_INT>=26)
             Notification.Builder(this,id).setSmallIcon(android.R.drawable.ic_menu_compass).setContentTitle("Dino Companion").setContentText("Your dinosaur is nearby").setOngoing(true).build()
         else Notification.Builder(this).setSmallIcon(android.R.drawable.ic_menu_compass).setContentTitle("Dino Companion").setContentText("Your dinosaur is nearby").setOngoing(true).build()
-        if(Build.VERSION.SDK_INT>=29) startForeground(22,n,0x40000000) else startForeground(22,n)
+        if(Build.VERSION.SDK_INT>=29) startForeground(22,n,ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE) else startForeground(22,n)
         if(Settings.canDrawOverlays(this)) showOverlay()
     }
 
