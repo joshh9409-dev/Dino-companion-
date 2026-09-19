@@ -108,7 +108,12 @@ class MainActivity : Activity() {
 
     override fun onResume() {
         super.onResume()
-        if (::game.isInitialized) game.invalidate()
+        if (::game.isInitialized) {
+            game.invalidate()
+            if (game.overlayOn && Settings.canDrawOverlays(this)) {
+                startDinoOverlay()
+            }
+        }
     }
 
     override fun onBackPressed() {
@@ -370,6 +375,7 @@ class DinoGameView(private val ctx: Context) : View(ctx) {
         if(id==0) id=res.getIdentifier(def.id+"_stage1","drawable",ctx.packageName)
         paint.color=Color.argb(70,20,50,50)
         c.drawOval(cx-72f*scale,cy+82f*scale,cx+72f*scale,cy+103f*scale,paint)
+        paint.alpha = 255
         if(id!=0) {
             val bmp=BitmapFactory.decodeResource(res,id)
             if(bmp!=null) {
@@ -503,8 +509,8 @@ class DinoOverlayService : Service() {
         wm=getSystemService(WINDOW_SERVICE) as WindowManager
         view=OverlayView(this)
         val type=if(Build.VERSION.SDK_INT>=26)WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE
-        val lp=WindowManager.LayoutParams(190,230,type,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,PixelFormat.TRANSLUCENT)
-        lp.gravity=Gravity.TOP or Gravity.END;lp.x=8;lp.y=160
+        val lp=WindowManager.LayoutParams(220,260,type,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,PixelFormat.TRANSLUCENT)
+        lp.gravity=Gravity.TOP or Gravity.END;lp.x=8;lp.y=170
         try{wm?.addView(view,lp)}catch(_:Exception){}
     }
 
@@ -522,11 +528,18 @@ class OverlayView(ctx:Context):View(ctx){
         val stage=prefs.getInt("stage",1)
         var id=resources.getIdentifier(species+"_stage"+stage+"_f"+(tick%3+1),"drawable",context.packageName)
         if(id==0)id=resources.getIdentifier(species+"_stage"+stage,"drawable",context.packageName)
-        paint.color=Color.argb(70,0,0,0);c.drawOval(35f,190f,155f,212f,paint)
+        paint.color=Color.argb(70,0,0,0)
+        c.drawOval(35f,190f,155f,212f,paint)
+        paint.alpha=255
         if(id!=0){
             val b=BitmapFactory.decodeResource(resources,id)
-            c.drawBitmap(b,null,RectF(25f,20f,165f,195f),paint);b.recycle()
-        }else{paint.color=Color.rgb(87,157,91);c.drawCircle(95f,105f,60f,paint)}
+            c.drawBitmap(b,null,RectF(15f,10f,175f,205f),paint)
+            b.recycle()
+        }else{
+            paint.color=Color.rgb(87,157,91)
+            paint.alpha=255
+            c.drawCircle(95f,105f,60f,paint)
+        }
     }
     override fun onTouchEvent(e:MotionEvent):Boolean{
         if(e.action==MotionEvent.ACTION_UP){
