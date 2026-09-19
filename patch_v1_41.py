@@ -834,7 +834,7 @@ class OverlayView(private val service: DinoOverlayService) : View(service) {
         val stage = prefs.getInt("stage", 1)
         var id = resources.getIdentifier(
             species + "_stage" + stage + "_f" + (tick % 3 + 1),
-            "drawable", packageName
+            "drawable", context.packageName
         )
         if (id == 0) id = resources.getIdentifier(
             species + "_stage" + stage, "drawable", packageName
