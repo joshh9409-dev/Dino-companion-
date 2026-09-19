@@ -51,3 +51,5 @@ jobs:
         with:
           name: DinoCompanion-v1.42-COMPLETE
           path: app/build/outputs/apk/debug/app-debug.apk
+
+# Trigger v1.42 after workflow creation
