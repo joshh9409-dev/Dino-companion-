@@ -615,7 +615,11 @@ props = '''    private val dino: DinoDef get() = dinos.firstOrNull { it.id == se
     private val uiScale: Float get() = min(getWidth().toFloat() / 420f, getHeight().toFloat() / 933f)
     private val uiWidth: Float get() = getWidth().toFloat() / uiScale
     private val uiHeight: Float get() = getHeight().toFloat() / uiScale'''
-body = body.replace(needle, props)
+body = body.replace('    override fun onDraw(c: Canvas) {', '''    private val uiScale: Float get() = kotlin.math.min(getWidth().toFloat() / 420f, getHeight().toFloat() / 933f)
+    private val uiWidth: Float get() = getWidth().toFloat() / uiScale
+    private val uiHeight: Float get() = getHeight().toFloat() / uiScale
+
+    override fun onDraw(c: Canvas) {''')
 
 old_draw = '''    override fun onDraw(c: Canvas) {
         drawBackground(c)
