@@ -63,7 +63,9 @@ main.write_text(s, encoding="utf-8")
 
 g = Path("app/build.gradle.kts")
 gs = g.read_text(encoding="utf-8")
+gs = gs.replace('versionCode = 37', 'versionCode = 39')
 gs = gs.replace('versionCode = 38', 'versionCode = 39')
+gs = gs.replace('versionName = "1.31"', 'versionName = "1.36"')
 gs = gs.replace('versionName = "1.35"', 'versionName = "1.36"')
 g.write_text(gs, encoding="utf-8")
 
