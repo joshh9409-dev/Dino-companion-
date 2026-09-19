@@ -2,21 +2,9 @@ from pathlib import Path
 
 p = Path("app/src/main/java/com/example/dinocompanion/HomeArtworkView.kt")
 s = p.read_text(encoding="utf-8")
-
-s = s.replace(
-'''        // Dynamic rename button label. The surrounding glossy button remains from
-        // the artwork, only its old "RENAME REX" lettering is covered.
-''',
-'''        drawLiveStats(canvas)
-        drawLiveEvolution(canvas)
-
-        // Dynamic rename button label. The surrounding glossy button remains from
-        // the artwork, only its old "RENAME REX" lettering is covered.
-'''
-)
-
-marker = '''    private fun drawCentered(canvas: Canvas, text: String, x: Float, y: Float, size: Float, color: Int, bold: Boolean) {
-'''
+needle = "        // Dynamic rename button label. The surrounding glossy button remains from\n"
+s = s.replace(needle, "        drawLiveStats(canvas)\n        drawLiveEvolution(canvas)\n\n" + needle, 1)
+marker = "    private fun drawCentered(canvas: Canvas, text: String, x: Float, y: Float, size: Float, color: Int, bold: Boolean) {\n"
 insert = '''    private fun drawLiveStats(canvas: Canvas) {
         val rows = listOf(
             Triple("Hunger", state.hunger, Color.rgb(77, 201, 48)),
@@ -61,3 +49,9 @@ insert = '''    private fun drawLiveStats(canvas: Canvas) {
         canvas.drawText(text, x, y, paint)
     }
 
+'''
+if marker not in s:
+    raise SystemExit("Expected HomeArtworkView marker was not found")
+s = s.replace(marker, insert + marker, 1)
+p.write_text(s, encoding="utf-8")
+print("Patched HomeArtworkView.kt")
