@@ -912,3 +912,216 @@ class OverlayView(private val service: DinoOverlayService) : View(service) {
 overlay_path.write_text(overlay, encoding="utf-8")
 
 print("Dino Companion v1.43 polished build generated")
+
+
+# ---------- FINAL XML UI REBUILD v1.45 ----------
+final_main = r'''
+package com.example.dinocompanion
+
+import android.Manifest
+import android.app.*
+import android.content.*
+import android.content.pm.PackageManager
+import android.graphics.*
+import android.net.Uri
+import android.os.*
+import android.provider.Settings
+import android.view.*
+import android.widget.*
+import kotlin.math.max
+import kotlin.math.min
+
+class MainActivity : Activity() {
+    private lateinit var content: FrameLayout
+    private lateinit var pageTitle: TextView
+    private val prefs by lazy { getSharedPreferences("dino_companion", Context.MODE_PRIVATE) }
+    private var selectedId = prefs.getString("species","trex") ?: "trex"
+    private var dinoName = prefs.getString("name","Rex") ?: "Rex"
+    private var stage = prefs.getInt("stage",1)
+    private var xp = prefs.getInt("xp",32)
+    private var hunger = prefs.getInt("hunger",78)
+    private var happiness = prefs.getInt("happiness",100)
+    private var energy = prefs.getInt("energy",79)
+    private var cleanliness = prefs.getInt("cleanliness",90)
+    private var bond = prefs.getInt("bond",12)
+    private var coins = prefs.getInt("coins",52)
+    private var food = prefs.getInt("food",3)
+    private var toys = prefs.getInt("toys",1)
+    private var gems = prefs.getInt("gems",0)
+    private var overlayOn = prefs.getBoolean("overlay",false)
+    private data class Dino(val id:String,val name:String,val accent:Int)
+    private val dinos=listOf(
+        Dino("trex","T-Rex",Color.rgb(52,112,61)),
+        Dino("triceratops","Triceratops",Color.rgb(62,96,128)),
+        Dino("pterodactyl","Pterodactyl",Color.rgb(92,59,116)),
+        Dino("stegosaurus","Stegosaurus",Color.rgb(151,82,38))
+    )
+    private val dino get()=dinos.firstOrNull{it.id==selectedId}?:dinos[0]
+
+    override fun onCreate(b:Bundle?){
+        super.onCreate(b)
+        window.statusBarColor=Color.rgb(42,105,150);window.navigationBarColor=Color.rgb(19,58,84)
+        setContentView(R.layout.activity_main)
+        content=findViewById(R.id.content);pageTitle=findViewById(R.id.pageTitle)
+        findViewById<Button>(R.id.navHome).setOnClickListener{home()}
+        findViewById<Button>(R.id.navCare).setOnClickListener{care()}
+        findViewById<Button>(R.id.navPlay).setOnClickListener{play()}
+        findViewById<Button>(R.id.navShop).setOnClickListener{shop()}
+        findViewById<Button>(R.id.navMore).setOnClickListener{settings()}
+        home()
+    }
+
+    private fun page(title:String):LinearLayout{
+        pageTitle.text=title;content.removeAllViews()
+        return LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(12),dp(6),dp(12),dp(12))}
+    }
+    private fun put(p:LinearLayout,v:View,h:Int=-2,weight:Float=0f){
+        p.addView(v,LinearLayout.LayoutParams(if(weight>0)0 else -1,h).apply{this.weight=weight;bottomMargin=dp(8)})
+    }
+    private fun text(t:String,size:Float=14f,bold:Boolean=false,color:Int=Color.DKGRAY)=TextView(this).apply{text=t;textSize=size;setTextColor(color);setTypeface(null,if(bold)Typeface.BOLD else Typeface.NORMAL)}
+    private fun button(t:String,action:()->Unit)=Button(this).apply{text=t;textSize=12f;setOnClickListener{action()}}
+    private fun card()=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(14),dp(12),dp(14),dp(12));background=bg()}
+    private fun bg()=android.graphics.drawable.GradientDrawable().apply{setColor(0xFFF8FDFF.toInt());cornerRadius=dp(18).toFloat()}
+    private fun stat(name:String,value:Int)=LinearLayout(this).apply{
+        orientation=LinearLayout.VERTICAL
+        addView(text(name+"  "+value+"%",11f,true))
+        addView(ProgressBar(this@MainActivity,null,android.R.attr.progressBarStyleHorizontal).apply{max=100;progress=value},
+            LinearLayout.LayoutParams(-1,dp(7)))
+    }
+    private fun dinoView(h:Int)=DinoView(this).apply{layoutParams=LinearLayout.LayoutParams(-1,dp(h))}
+
+    private fun home(){
+        val p=page("DINO COMPANION");val c=card()
+        put(c,text(dinoName+"  •  "+dino.name+"  •  Stage "+stage,18f,true,dino.accent))
+        put(c,stat("Hunger",hunger));put(c,stat("Happiness",happiness));put(c,stat("Energy",energy))
+        put(c,stat("Cleanliness",cleanliness));put(c,stat("Bond",bond));put(p,c)
+        val d=card();put(d,text("YOUR DINO",15f,true,dino.accent));put(d,dinoView(235))
+        put(d,text(if(stage<4)"Evolution: "+xp+" / "+(stage*100)+" XP" else "MAX EVOLUTION",13f,true,dino.accent));put(p,d)
+        val r=LinearLayout(this);r.orientation=LinearLayout.HORIZONTAL
+        put(r,button("FOOD & CARE"){care()},-2,1f);put(r,button("PLAY"){play()},-2,1f);put(p,r)
+        val r2=LinearLayout(this);r2.orientation=LinearLayout.HORIZONTAL
+        put(r2,button("CHOOSE DINO"){choose()},-2,1f);put(r2,button("SHOP"){shop()},-2,1f);put(p,r2)
+        val r3=LinearLayout(this);r3.orientation=LinearLayout.HORIZONTAL
+        put(r3,button("INVENTORY"){inventory()},-2,1f);put(r3,button("SETTINGS"){settings()},-2,1f);put(p,r3)
+        content.addView(p)
+    }
+
+    private fun care(){
+        val p=page("FOOD & CARE");val c=card()
+        put(c,text("Keep "+dinoName+" healthy and happy",16f,true,dino.accent));put(c,dinoView(205))
+        put(c,stat("Hunger",hunger));put(c,stat("Happiness",happiness));put(c,stat("Energy",energy));put(c,stat("Cleanliness",cleanliness))
+        val r=LinearLayout(this);r.orientation=LinearLayout.HORIZONTAL
+        put(r,button("FEED ("+food+")"){feed();care()},-2,1f);put(r,button("CLEAN"){clean();care()},-2,1f);put(c,r)
+        val r2=LinearLayout(this);r2.orientation=LinearLayout.HORIZONTAL
+        put(r2,button("REST"){rest();care()},-2,1f);put(r2,button("PET"){pet();care()},-2,1f);put(c,r2);content.addView(p)
+    }
+
+    private fun choose(){
+        val p=page("CHOOSE DINOSAUR");put(p,text("Choose your active dinosaur",14f))
+        dinos.forEach{d->put(p,button((if(d.id==selectedId)"✓ " else "")+d.name){selectedId=d.id;save();choose()})}
+        put(p,button("BACK HOME"){home()});content.addView(p)
+    }
+
+    private fun play(){
+        val p=page("PLAY");val c=card();put(c,dinoView(220));put(c,text("Mini games",18f,true,dino.accent))
+        put(c,button("DINO DASH  +15 XP"){happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2;addXp(15);play()})
+        put(c,button("PLAY BALL  +20 XP"){if(toys>0){toys--;happiness=min(100,happiness+18);energy=max(0,energy-8);bond=min(100,bond+8);coins+=4;addXp(20)}else toast("Buy a toy first.");play()})
+        put(c,text("Coins: "+coins+"   •   Bond: "+bond,13f,true));put(p,c);content.addView(p)
+    }
+
+    private fun shop(){
+        val p=page("SHOP");put(p,text("Coins: "+coins+"   •   Gems: "+gems,15f,true))
+        buy(p,"FOOD PACK","3 meals • 10 coins"){if(coins>=10){coins-=10;food+=3;save();shop()}else toast("Not enough coins")}
+        buy(p,"TOY","1 toy • 18 coins"){if(coins>=18){coins-=18;toys++;save();shop()}else toast("Not enough coins")}
+        buy(p,"GEM","1 gem • 50 coins"){if(coins>=50){coins-=50;gems++;save();shop()}else toast("Not enough coins")}
+        buy(p,"XP BOOST","+50 XP • 35 coins"){if(coins>=35){coins-=35;addXp(50);shop()}else toast("Not enough coins")}
+        put(p,button("FREE DAILY COIN"){coins++;save();shop()});content.addView(p)
+    }
+    private fun buy(p:LinearLayout,n:String,d:String,a:()->Unit){val c=card();put(c,text(n,16f,true,dino.accent));put(c,text(d));put(c,button("BUY"){a()});put(p,c)}
+
+    private fun inventory(){
+        val p=page("INVENTORY")
+        put(p,card().apply{put(this,text("FOOD: "+food,16f,true));put(this,text("Meals ready to use"))})
+        put(p,card().apply{put(this,text("TOYS: "+toys,16f,true));put(this,text("Play items"))})
+        put(p,card().apply{put(this,text("GEMS: "+gems,16f,true));put(this,text("Rare currency"))})
+        put(p,card().apply{put(this,text("COINS: "+coins,16f,true));put(this,text("Shop currency"))})
+        content.addView(p)
+    }
+
+    private fun settings(){
+        val p=page("SETTINGS")
+        put(p,card().apply{put(this,text("Dinosaur name",15f,true));put(this,text(dinoName))})
+        put(p,button("RENAME DINOSAUR"){rename()})
+        put(p,button(if(overlayOn)"OVERLAY: ON" else "OVERLAY: OFF"){overlaySettings()})
+        put(p,button("RESET DINO"){reset();home()})
+        put(p,text("Dino Companion 1.45",12f,false,Color.GRAY));content.addView(p)
+    }
+
+    private fun rename(){
+        val e=EditText(this);e.setText(dinoName);e.selectAll()
+        AlertDialog.Builder(this).setTitle("Rename your dinosaur").setView(e).setNegativeButton("Cancel",null)
+            .setPositiveButton("Save"){_,_->dinoName=e.text.toString().trim().ifEmpty{dinoName}.take(18);save();home()}.show()
+    }
+    private fun overlaySettings(){
+        val permission=Settings.canDrawOverlays(this)
+        AlertDialog.Builder(this).setTitle("Overlay Companion")
+            .setMessage(if(permission)"Overlay permission is ON." else "Grant Display over other apps permission.")
+            .setNegativeButton("Close",null)
+            .setPositiveButton(if(permission)"Toggle" else "Open settings"){_,_->
+                if(!permission)startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+packageName)))
+                else{overlayOn=!overlayOn;save();if(overlayOn)startDinoOverlay()else stopDinoOverlay();settings()}
+            }.show()
+    }
+    private fun startDinoOverlay(){
+        if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED){requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS),41);overlayOn=false;save();return}
+        try{if(Build.VERSION.SDK_INT>=26)startForegroundService(Intent(this,DinoOverlayService::class.java))else startService(Intent(this,DinoOverlayService::class.java))}catch(_:Exception){overlayOn=false;save()}
+    }
+    fun stopDinoOverlay(){try{stopService(Intent(this,DinoOverlayService::class.java))}catch(_:Exception){}}
+    private fun feed(){if(food<=0){toast("No food. Visit the shop.");return};food--;hunger=min(100,hunger+25);energy=min(100,energy+5);happiness=min(100,happiness+3);addXp(8)}
+    private fun clean(){cleanliness=min(100,cleanliness+28);happiness=min(100,happiness+5);addXp(6)}
+    private fun rest(){energy=min(100,energy+30);hunger=max(0,hunger-3);addXp(4)}
+    private fun pet(){happiness=min(100,happiness+12);bond=min(100,bond+5);addXp(5)}
+    private fun addXp(n:Int){xp+=n;while(stage<4&&xp>=stage*100){xp-=stage*100;stage++;coins+=25;happiness=min(100,happiness+10);bond=min(100,bond+5);toast("Dino evolved to Stage "+stage+"!")}save()}
+    private fun reset(){selectedId="trex";dinoName="Rex";stage=1;xp=32;hunger=78;happiness=100;energy=79;cleanliness=90;bond=12;coins=52;food=3;toys=1;gems=0;overlayOn=false;save();stopDinoOverlay()}
+    private fun save(){prefs.edit().putString("species",selectedId).putString("name",dinoName).putInt("stage",stage).putInt("xp",xp).putInt("hunger",hunger).putInt("happiness",happiness).putInt("energy",energy).putInt("cleanliness",cleanliness).putInt("bond",bond).putInt("coins",coins).putInt("food",food).putInt("toys",toys).putInt("gems",gems).putBoolean("overlay",overlayOn).apply()}
+    private fun toast(s:String)=Toast.makeText(this,s,Toast.LENGTH_SHORT).show()
+    private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
+
+    inner class DinoView(c:Context):View(c){
+        private var frame=0;private val paint=Paint(Paint.ANTI_ALIAS_FLAG);private val h=Handler(Looper.getMainLooper())
+        private val r=object:Runnable{override fun run(){frame=(frame+1)%3;invalidate();h.postDelayed(this,180)}}
+        init{h.post(r)}
+        override fun onDraw(c:Canvas){
+            val id=resources.getIdentifier(dino.id+"_stage"+stage+"_f"+(frame+1),"drawable",packageName).let{if(it==0)resources.getIdentifier(dino.id+"_stage"+stage,"drawable",packageName)else it}
+            if(id!=0){val b=BitmapFactory.decodeResource(resources,id);if(b!=null){val s=min(width.toFloat()/b.width,height.toFloat()/b.height)*.88f;val w=b.width*s;val hh=b.height*s;c.drawBitmap(b,null,RectF((width-w)/2,(height-hh)/2,(width+w)/2,(height+hh)/2),paint);b.recycle();return}}
+            paint.color=dino.accent;c.drawCircle(width/2f,height/2f,min(width,height)*.25f,paint)
+        }
+    }
+}
+'''
+layout_dir = root / "app/src/main/res/layout"
+layout_dir.mkdir(parents=True, exist_ok=True)
+(layout_dir / "activity_main.xml").write_text(r'''<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="#E3F2FD">
+    <TextView android:id="@+id/pageTitle" android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:padding="14dp" android:text="DINO COMPANION" android:textSize="23sp" android:textStyle="bold"
+        android:textColor="#2E7D32" android:gravity="center"/>
+    <FrameLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"
+        android:padding="4dp" android:background="#FFFFFF">
+        <Button android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Home" android:textSize="10sp"/>
+        <Button android:id="@+id/navCare" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Care" android:textSize="10sp"/>
+        <Button android:id="@+id/navPlay" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Play" android:textSize="10sp"/>
+        <Button android:id="@+id/navShop" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Shop" android:textSize="10sp"/>
+        <Button android:id="@+id/navMore" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="More" android:textSize="10sp"/>
+    </LinearLayout>
+</LinearLayout>''',encoding="utf-8")
+main_path = root / "app/src/main/java/com/example/dinocompanion/MainActivity.kt"
+main_path.write_text(final_main,encoding="utf-8")
+g=root/"app/build.gradle.kts";gs=g.read_text(encoding="utf-8")
+gs=re.sub(r'applicationId\s*=\s*"[^"]+"','applicationId = "com.example.dinocompanion.v145"',gs)
+gs=re.sub(r'versionCode\s*=\s*\d+','versionCode = 48',gs)
+gs=re.sub(r'versionName\s*=\s*"[^"]+"','versionName = "1.45"',gs)
+g.write_text(gs,encoding="utf-8")
+print("Dino Companion v1.45 native XML UI generated")
