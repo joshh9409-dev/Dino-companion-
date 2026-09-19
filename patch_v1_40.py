@@ -32,7 +32,7 @@ class MainActivity : Activity() {
         screen.addView(title)
 
         val message = TextView(this)
-        message.text = "CLEAN LAUNCH TEST\\n\\nThis is a completely fresh Android package.\\nIf this screen appears, the phone can launch the app."
+        message.text = "CLEAN LAUNCH TEST\n\nThis is a completely fresh Android package.\nIf this screen appears, Android can launch the app."
         message.textSize = 17f
         message.setTextColor(Color.WHITE)
         message.gravity = Gravity.CENTER
@@ -67,7 +67,6 @@ themes = root / "app/src/main/res/values/themes.xml"
 themes.write_text(r'''<resources>
     <style name="Theme.DinoCompanion" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
-        <item name="android:windowActionModeOverlay">true</item>
         <item name="android:colorAccent">#77A85B</item>
         <item name="android:navigationBarColor">#1E5A8C</item>
         <item name="android:statusBarColor">#1E5A8C</item>
@@ -82,7 +81,6 @@ s = re.sub(r'namespace\s*=\s*"[^"]+"', 'namespace = "com.example.dinocompanion"'
 s = re.sub(r'applicationId\s*=\s*"[^"]+"', 'applicationId = "com.example.dinocompanion.clean"', s)
 s = re.sub(r'versionCode\s*=\s*\d+', 'versionCode = 43', s)
 s = re.sub(r'versionName\s*=\s*"[^"]+"', 'versionName = "1.40"', s)
-# Remove all dependencies except the Android/Kotlin plugins already supplied.
-s = re.sub(r'\ndependencies\s*\{.*?\}\s*', '\n', s, flags=re.S)
+# Preserve the original dependency block. The previous version accidentally removed it.
 g.write_text(s, encoding="utf-8")
-print("v1.40 completely fresh package launcher test applied")
+print("v1.40 clean package patch corrected")
