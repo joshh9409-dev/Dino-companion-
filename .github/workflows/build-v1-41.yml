@@ -36,3 +36,5 @@ jobs:
         with:
           name: DinoCompanion-v1.41-COMPLETE
           path: app/build/outputs/apk/debug/*.apk
+
+# v1.41 build trigger
