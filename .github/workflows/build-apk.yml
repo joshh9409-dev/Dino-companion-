@@ -2,9 +2,6 @@ name: Build Dino Companion v1.34
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   build:
