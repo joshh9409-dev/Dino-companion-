@@ -1,8 +1,6 @@
 name: Dino Companion v1.39 Launcher Test
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
