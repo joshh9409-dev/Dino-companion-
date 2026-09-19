@@ -1,7 +1,6 @@
 from pathlib import Path
 
-# v1.34: fix launcher startup by removing fragile immersive startup code and
-# catching every part of MainActivity initialization, including system-bar setup.
+# v1.34 launcher reliability patch.
 p = Path("app/src/main/java/com/example/dinocompanion/MainActivity.kt")
 s = p.read_text(encoding="utf-8")
 
@@ -61,14 +60,13 @@ new_block = '''    override fun onCreate(savedInstanceState: Bundle?) {
         setContentView(box)
     }
 '''
+
 s = s[:start] + new_block + s[end:]
 
-# Make hideSystemBars harmless and no-op. The app should open normally first.
 hs = s.index("    private fun hideSystemBars() {")
 hs_end = s.index("\n    }", hs) + len("\n    }")
 s = s[:hs] + '''    private fun hideSystemBars() {
-        // Intentionally left non-immersive for Android 16 compatibility.
-        // The launcher must open reliably before any fullscreen behaviour is applied.
+        // Intentionally non-immersive for Android 16 startup reliability.
     }''' + s[hs_end:]
 
 p.write_text(s, encoding="utf-8")
