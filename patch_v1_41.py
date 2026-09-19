@@ -474,6 +474,7 @@ package com.example.dinocompanion
 
 import android.app.*
 import android.content.*
+import android.content.pm.ServiceInfo
 import android.graphics.*
 import android.os.*
 import android.provider.Settings
