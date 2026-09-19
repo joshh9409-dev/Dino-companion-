@@ -784,7 +784,7 @@ class DinoOverlayService : Service() {
     }
 
     fun hideOverlay() {
-        getSharedPreferences("dino_companion", MODE_PRIVATE).edit().putBoolean("overlay", false).apply()
+        getSharedPreferences("dino_companion", Context.MODE_PRIVATE).edit().putBoolean("overlay", false).apply()
         stopSelf()
     }
 
@@ -802,7 +802,7 @@ class DinoOverlayService : Service() {
 }
 
 class OverlayView(private val service: DinoOverlayService) : View(service) {
-    private val prefs = service.getSharedPreferences("dino_companion", MODE_PRIVATE)
+    private val prefs = service.getSharedPreferences("dino_companion", Context.MODE_PRIVATE)
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private var tick = 0
     private var menu = false
@@ -833,7 +833,7 @@ class OverlayView(private val service: DinoOverlayService) : View(service) {
             "drawable", context.packageName
         )
         if (id == 0) id = resources.getIdentifier(
-            species + "_stage" + stage, "drawable", packageName
+            species + "_stage" + stage, "drawable", context.packageName
         )
 
         paint.alpha = 255
