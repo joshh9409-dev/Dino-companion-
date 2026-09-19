@@ -3,6 +3,7 @@ import shutil
 
 main = Path("app/src/main/java/com/example/dinocompanion/MainActivity.kt")
 s = main.read_text(encoding="utf-8")
+s = s.replace("private lateinit var home: HomeArtworkView", "private lateinit var home: View")
 start = s.index("    private fun buildHome() {")
 end = s.index("\n    private fun showCare()", start)
 s = s[:start] + '''    private fun buildHome() {
