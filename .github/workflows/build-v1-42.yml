@@ -53,3 +53,5 @@ jobs:
           path: app/build/outputs/apk/debug/app-debug.apk
 
 # Trigger v1.42 after workflow creation
+
+# Rebuild after AppCompat resource-link fix
