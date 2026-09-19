@@ -1,6 +1,6 @@
 from pathlib import Path
 
-# v1.34 launcher reliability patch.
+# v1.35 clean-install launcher patch.
 p = Path("app/src/main/java/com/example/dinocompanion/MainActivity.kt")
 s = p.read_text(encoding="utf-8")
 
@@ -73,7 +73,9 @@ p.write_text(s, encoding="utf-8")
 
 g = Path("app/build.gradle.kts")
 gs = g.read_text(encoding="utf-8")
-gs = gs.replace('versionName = "1.31"', 'versionName = "1.34"')
+gs = gs.replace('applicationId = "com.example.dinocompanion"', 'applicationId = "com.example.dinocompanion.v135"')
+gs = gs.replace('versionCode = 37', 'versionCode = 38')
+gs = gs.replace('versionName = "1.31"', 'versionName = "1.35"')
 g.write_text(gs, encoding="utf-8")
 
-print("Applied v1.34 launcher reliability patch.")
+print("Applied v1.35 clean-install launcher patch.")
