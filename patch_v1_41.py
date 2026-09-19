@@ -18,7 +18,8 @@ package com.example.dinocompanion
 import android.Manifest
 import android.app.*
 import android.content.*
-import android.content.pm.PackageManager\nimport android.content.pm.ServiceInfo
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.graphics.*
 import android.net.Uri
 import android.os.*
@@ -563,9 +564,9 @@ values.mkdir(parents=True, exist_ok=True)
 g = root / "app/build.gradle.kts"
 s = g.read_text(encoding="utf-8")
 s = re.sub(r'namespace\s*=\s*"[^"]+"','namespace = "com.example.dinocompanion"',s)
-s = re.sub(r'applicationId\s*=\s*"[^"]+"','applicationId = "com.example.dinocompanion.clean"',s)
-s = re.sub(r'versionCode\s*=\s*\d+','versionCode = 44',s)
-s = re.sub(r'versionName\s*=\s*"[^"]+"','versionName = "1.41"',s)
+s = re.sub(r'applicationId\s*=\s*"[^"]+"','applicationId = "com.example.dinocompanion.v142"',s)
+s = re.sub(r'versionCode\s*=\s*\d+','versionCode = 45',s)
+s = re.sub(r'versionName\s*=\s*"[^"]+"','versionName = "1.42"',s)
 s = re.sub(r'\s*implementation\("androidx\.appcompat:appcompat:[^"]+"\)','',s)
 g.write_text(s,encoding="utf-8")
-print("Dino Companion v1.41 complete build generated")
+print("Dino Companion v1.42 complete build generated")
