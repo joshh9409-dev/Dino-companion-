@@ -1,8 +1,6 @@
 name: Dino Companion v1.36 Build
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
