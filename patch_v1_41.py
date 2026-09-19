@@ -1107,7 +1107,7 @@ layout_dir.mkdir(parents=True, exist_ok=True)
     <TextView android:id="@+id/pageTitle" android:layout_width="match_parent" android:layout_height="wrap_content"
         android:padding="14dp" android:text="DINO COMPANION" android:textSize="23sp" android:textStyle="bold"
         android:textColor="#2E7D32" android:gravity="center"/>
-    <FrameLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"/>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true"><FrameLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content"/></ScrollView>
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"
         android:padding="4dp" android:background="#FFFFFF">
         <Button android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Home" android:textSize="10sp"/>
