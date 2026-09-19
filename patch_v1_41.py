@@ -612,9 +612,9 @@ body = re.sub(r"\bwidth\b", "uiWidth", body)
 
 needle = '    private val dino: DinoDef get() = dinos.firstOrNull { it.id == selectedId } ?: dinos[0]'
 props = '''    private val dino: DinoDef get() = dinos.firstOrNull { it.id == selectedId } ?: dinos[0]
-    private val uiScale: Float get() = min(super.width.toFloat() / 420f, super.height.toFloat() / 933f)
-    private val uiWidth: Float get() = super.width.toFloat() / uiScale
-    private val uiHeight: Float get() = super.height.toFloat() / uiScale'''
+    private val uiScale: Float get() = min(getWidth().toFloat() / 420f, getHeight().toFloat() / 933f)
+    private val uiWidth: Float get() = getWidth().toFloat() / uiScale
+    private val uiHeight: Float get() = getHeight().toFloat() / uiScale'''
 body = body.replace(needle, props)
 
 old_draw = '''    override fun onDraw(c: Canvas) {
