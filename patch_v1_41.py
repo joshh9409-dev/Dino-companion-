@@ -46,34 +46,42 @@ class MainActivity : Activity() {
         val input = EditText(this)
         input.setText(game.dinoName)
         input.selectAll()
-        AlertDialog.Builder(this).setTitle("Rename your dinosaur").setView(input)
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Rename your dinosaur")
+            .setView(input)
             .setNegativeButton("Cancel", null)
-            .setPositiveButton("Save") { _, _ ->
+            .setPositiveButton("Save", DialogInterface.OnClickListener { _, _ ->
                 game.dinoName = input.text.toString().trim().ifEmpty { game.dinoName }.take(18)
                 game.save()
                 game.invalidate()
-            }.show()
+            })
+            .create()
+        dialog.show()
     }
 
     fun overlaySettings() {
         val permission = Settings.canDrawOverlays(this)
-        AlertDialog.Builder(this)
+        val openSettings = DialogInterface.OnClickListener { _, _ ->
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + packageName)))
+        }
+        val toggle = DialogInterface.OnClickListener { _, _ ->
+            if (!Settings.canDrawOverlays(this)) {
+                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + packageName)))
+            } else {
+                game.overlayOn = !game.overlayOn
+                game.save()
+                if (game.overlayOn) startDinoOverlay() else stopDinoOverlay()
+                game.invalidate()
+            }
+        }
+        val dialog = AlertDialog.Builder(this)
             .setTitle("Overlay Companion")
             .setMessage(if (permission) "Overlay permission is ON. Your Dino can float above other apps." else "The floating Dino needs Display over other apps permission.")
             .setNegativeButton("Close", null)
-            .setNeutralButton(if (permission) "Open settings" else "Grant permission") {
-                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + packageName)))
-            }
-            .setPositiveButton(if (game.overlayOn) "Turn off" else "Turn on") { _, _ ->
-                if (!Settings.canDrawOverlays(this)) {
-                    startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + packageName)))
-                } else {
-                    game.overlayOn = !game.overlayOn
-                    game.save()
-                    if (game.overlayOn) startDinoOverlay() else stopDinoOverlay()
-                    game.invalidate()
-                }
-            }.show()
+            .setNeutralButton(if (permission) "Open settings" else "Grant permission", openSettings)
+            .setPositiveButton(if (game.overlayOn) "Turn off" else "Turn on", toggle)
+            .create()
+        dialog.show()
     }
 
     private fun startDinoOverlay() {
