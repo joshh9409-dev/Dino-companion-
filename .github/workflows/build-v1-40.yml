@@ -20,8 +20,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ZIP_FILE=$(find . -maxdepth 1 -type f -iname 'DinoCompanion*.zip' -printf '%f
-' | sort -V | tail -n 1)
+          ZIP_FILE=$(find . -maxdepth 1 -type f -iname 'DinoCompanion*.zip' -printf '%f\n' | sort -V | tail -n 1)
           test -n "$ZIP_FILE"
           rm -rf app build.gradle.kts settings.gradle.kts gradle.properties README.md BUILD_VERSION.txt
           unzip -o "$ZIP_FILE" -d .
