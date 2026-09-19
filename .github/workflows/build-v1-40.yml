@@ -1,8 +1,6 @@
 name: Dino Companion v1.40 Clean Package Test
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
