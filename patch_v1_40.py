@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import shutil
 
 root = Path(".")
 pkg = root / "app/src/main/java/com/example/dinocompanion"
@@ -75,6 +76,13 @@ themes.write_text(r'''<resources>
 </resources>
 ''', encoding="utf-8")
 
+# The original project contains legacy XML layouts using percentage dimensions
+# such as 88%, which Android AAPT rejects. This clean launch test uses a fully
+# programmatic Activity, so remove the unused legacy layout resources entirely.
+layout_dir = root / "app/src/main/res/layout"
+if layout_dir.exists():
+    shutil.rmtree(layout_dir)
+
 g = root / "app/build.gradle.kts"
 s = g.read_text(encoding="utf-8")
 s = re.sub(r'namespace\s*=\s*"[^"]+"', 'namespace = "com.example.dinocompanion"', s)
@@ -83,4 +91,4 @@ s = re.sub(r'versionCode\s*=\s*\d+', 'versionCode = 43', s)
 s = re.sub(r'versionName\s*=\s*"[^"]+"', 'versionName = "1.40"', s)
 # Preserve the original dependency block. The previous version accidentally removed it.
 g.write_text(s, encoding="utf-8")
-print("v1.40 clean package patch corrected")
+print("v1.40 clean package patch corrected: legacy layout resources removed")
