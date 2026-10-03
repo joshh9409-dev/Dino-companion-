@@ -1036,9 +1036,17 @@ class MainActivity : Activity() {
         p.addView(v,LinearLayout.LayoutParams(if(weight>0)0 else -1,h).apply{this.weight=weight;bottomMargin=dp(8)})
     }
     private fun text(t:String,size:Float=14f,bold:Boolean=false,color:Int=Color.DKGRAY)=TextView(this).apply{text=t;textSize=size;setTextColor(color);setTypeface(null,if(bold)Typeface.BOLD else Typeface.NORMAL)}
-    private fun button(t:String,action:()->Unit)=Button(this).apply{
-        text=t;textSize=12f;setTextColor(Color.WHITE);isAllCaps=false
-        background=android.graphics.drawable.GradientDrawable().apply{setColor(Color.rgb(67,139,155));cornerRadius=dp(14).toFloat()}
+    private fun button(t:String,color:Int=Color.rgb(67,139,155),action:()->Unit)=Button(this).apply{
+        text=t;textSize=13f;setTextColor(Color.WHITE);isAllCaps=false
+        gravity=Gravity.CENTER
+        minHeight=dp(50);minimumHeight=dp(50)
+        setPadding(dp(10),dp(4),dp(10),dp(4))
+        background=android.graphics.drawable.GradientDrawable().apply{
+            setColor(color)
+            cornerRadius=dp(16).toFloat()
+            setStroke(dp(1),Color.argb(70,255,255,255))
+        }
+        elevation=dp(3).toFloat()
         stateListAnimator=null
         setOnClickListener{action()}
     }
@@ -1085,11 +1093,11 @@ class MainActivity : Activity() {
         }
         put(p,grid)
         val r=LinearLayout(this);r.orientation=LinearLayout.HORIZONTAL
-        put(r,button("FOOD & CARE"){care()},-2,1f);put(r,button("PLAY"){play()},-2,1f);put(p,r)
+        put(r,button("FOOD & CARE",Color.rgb(80,160,115)){care()},-2,1f);put(r,button("PLAY",Color.rgb(126,100,181)){play()},-2,1f);put(p,r)
         val r2=LinearLayout(this);r2.orientation=LinearLayout.HORIZONTAL
-        put(r2,button("CHOOSE DINO"){choose()},-2,1f);put(r2,button("SHOP"){shop()},-2,1f);put(p,r2)
+        put(r2,button("CHOOSE DINO",Color.rgb(65,128,172)){choose()},-2,1f);put(r2,button("SHOP",Color.rgb(190,130,67)){shop()},-2,1f);put(p,r2)
         val r3=LinearLayout(this);r3.orientation=LinearLayout.HORIZONTAL
-        put(r3,button("INVENTORY"){inventory()},-2,1f);put(r3,button("SETTINGS"){settings()},-2,1f);put(p,r3)
+        put(r3,button("INVENTORY",Color.rgb(73,158,181)){inventory()},-2,1f);put(r3,button("SETTINGS",Color.rgb(67,112,145)){settings()},-2,1f);put(p,r3)
         content.addView(p)
     }
 
@@ -1098,9 +1106,9 @@ class MainActivity : Activity() {
         put(c,text("Keep "+dinoName+" healthy and happy",16f,true,dino.accent));put(c,dinoView(205))
         put(c,stat("Hunger",hunger));put(c,stat("Happiness",happiness));put(c,stat("Energy",energy));put(c,stat("Cleanliness",cleanliness))
         val r=LinearLayout(this);r.orientation=LinearLayout.HORIZONTAL
-        put(r,button("FEED ("+food+")"){feed();care()},-2,1f);put(r,button("CLEAN"){clean();care()},-2,1f);put(c,r)
+        put(r,button("FEED ("+food+")",Color.rgb(93,164,92)){feed();care()},-2,1f);put(r,button("CLEAN",Color.rgb(73,158,181)){clean();care()},-2,1f);put(c,r)
         val r2=LinearLayout(this);r2.orientation=LinearLayout.HORIZONTAL
-        put(r2,button("REST"){rest();care()},-2,1f);put(r2,button("PET"){pet();care()},-2,1f);put(c,r2);content.addView(p)
+        put(r2,button("REST",Color.rgb(76,122,181)){rest();care()},-2,1f);put(r2,button("PET",Color.rgb(175,91,135)){pet();care()},-2,1f);put(c,r2);content.addView(p)
     }
 
     private fun choose(){
@@ -1114,14 +1122,14 @@ class MainActivity : Activity() {
             c.setOnClickListener{selectedId=choice.id;save();choose()}
             put(p,c)
         }
-        put(p,button("BACK HOME"){home()})
+        put(p,button("BACK HOME",Color.rgb(65,128,172)){home()})
         content.addView(p)
     }
 
     private fun play(){
         val p=page("PLAY");val c=card();put(c,dinoView(220));put(c,text("Mini games",18f,true,dino.accent))
-        put(c,button("DINO DASH  +15 XP"){happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2;addXp(15);play()})
-        put(c,button("PLAY BALL  +20 XP"){if(toys>0){toys--;happiness=min(100,happiness+18);energy=max(0,energy-8);bond=min(100,bond+8);coins+=4;addXp(20)}else toast("Buy a toy first.");play()})
+        put(c,button("DINO DASH  +15 XP",Color.rgb(93,164,92)){happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2;addXp(15);play()})
+        put(c,button("PLAY BALL  +20 XP",Color.rgb(126,100,181)){if(toys>0){toys--;happiness=min(100,happiness+18);energy=max(0,energy-8);bond=min(100,bond+8);coins+=4;addXp(20)}else toast("Buy a toy first.");play()})
         put(c,text("Coins: "+coins+"   •   Bond: "+bond,13f,true));put(p,c);content.addView(p)
     }
 
@@ -1131,9 +1139,9 @@ class MainActivity : Activity() {
         buy(p,"TOY","1 toy • 18 coins"){if(coins>=18){coins-=18;toys++;save();shop()}else toast("Not enough coins")}
         buy(p,"GEM","1 gem • 50 coins"){if(coins>=50){coins-=50;gems++;save();shop()}else toast("Not enough coins")}
         buy(p,"XP BOOST","+50 XP • 35 coins"){if(coins>=35){coins-=35;addXp(50);shop()}else toast("Not enough coins")}
-        put(p,button("FREE DAILY COIN"){coins++;save();shop()});content.addView(p)
+        put(p,button("FREE DAILY COIN",Color.rgb(190,130,67)){coins++;save();shop()});content.addView(p)
     }
-    private fun buy(p:LinearLayout,n:String,d:String,a:()->Unit){val c=card();put(c,text(n,16f,true,dino.accent));put(c,text(d));put(c,button("BUY"){a()});put(p,c)}
+    private fun buy(p:LinearLayout,n:String,d:String,a:()->Unit){val c=card();put(c,text(n,16f,true,dino.accent));put(c,text(d));put(c,button("BUY",Color.rgb(190,130,67)){a()});put(p,c)}
 
     private fun inventory(){
         val p=page("INVENTORY")
@@ -1147,9 +1155,9 @@ class MainActivity : Activity() {
     private fun settings(){
         val p=page("SETTINGS")
         put(p,card().apply{put(this,text("Dinosaur name",15f,true));put(this,text(dinoName))})
-        put(p,button("RENAME DINOSAUR"){rename()})
-        put(p,button(if(overlayOn)"OVERLAY: ON" else "OVERLAY: OFF"){overlaySettings()})
-        put(p,button("RESET DINO"){reset();home()})
+        put(p,button("RENAME DINOSAUR",Color.rgb(65,128,172)){rename()})
+        put(p,button(if(overlayOn)"OVERLAY: ON" else "OVERLAY: OFF",Color.rgb(73,158,181)){overlaySettings()})
+        put(p,button("RESET DINO",Color.rgb(170,79,78)){reset();home()})
         put(p,text("Dino Companion 1.45",12f,false,Color.GRAY));content.addView(p)
     }
 
