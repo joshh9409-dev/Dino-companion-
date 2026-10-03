@@ -1043,7 +1043,7 @@ class MainActivity : Activity() {
                     b.background=android.graphics.drawable.GradientDrawable().apply{
                         setColor(if(active)Color.rgb(58,139,160) else 0xFFF1FAFD.toInt())
                         cornerRadius=dp(14).toFloat()
-                        setStroke(dp(1),if(active)0x80FFFFFF else 0x30609BB0)
+                        setStroke(dp(1),if(active)0x80FFFFFF.toInt() else 0x30609BB0)
                     }
                     b.elevation=if(active)dp(3).toFloat() else 0f
                 }
