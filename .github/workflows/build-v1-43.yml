@@ -38,6 +38,8 @@ jobs:
           grep -n "content.removeAllViews" app/src/main/java/com/example/dinocompanion/MainActivity.kt
           grep -n "Choose a game" app/src/main/java/com/example/dinocompanion/MainActivity.kt
           sed -n "335,355p" app/src/main/java/com/example/dinocompanion/MainActivity.kt
+          echo "=== EXACT GENERATED LINE 344 ==="
+          nl -ba app/src/main/java/com/example/dinocompanion/MainActivity.kt | sed -n "344p"
 
       - name: Gradle 8.11
         uses: gradle/actions/setup-gradle@v4
