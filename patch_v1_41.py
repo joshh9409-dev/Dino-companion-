@@ -1059,19 +1059,31 @@ class MainActivity : Activity() {
         put(c,stat("Cleanliness",cleanliness));put(c,stat("Bond",bond));put(p,c)
         val d=card();put(d,text("YOUR DINO",15f,true,dino.accent));put(d,dinoView(235))
         put(d,text(if(stage<4)"Evolution: "+xp+" / "+(stage*100)+" XP" else "MAX EVOLUTION",13f,true,dino.accent));put(p,d)
-        put(p,text("YOUR DINOSAURS",15f,true,dino.accent))
-        val strip=HorizontalScrollView(this).apply{isHorizontalScrollBarEnabled=false}
-        val row=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
-        dinos.forEach{choice->
-            val mini=card()
-            mini.minimumWidth=dp(145)
-            put(mini,dinoView(105,choice))
-            put(mini,text(choice.name,13f,true,choice.accent))
-            mini.setOnClickListener{selectedId=choice.id;save();home()}
-            row.addView(mini,LinearLayout.LayoutParams(dp(145),-2).apply{rightMargin=dp(8)})
+        put(p,text("YOUR DINOSAURS",16f,true,dino.accent))
+        put(p,text("Tap any dinosaur to make it your active companion",12f,false,Color.WHITE))
+        val grid=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL}
+        for(start in dinos.indices step 2){
+            val row=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+            for(i in start until min(start+2,dinos.size)){
+                val choice=dinos[i]
+                val mini=card()
+                mini.background=android.graphics.drawable.GradientDrawable().apply{
+                    setColor(0xFFF8FDFF.toInt())
+                    cornerRadius=dp(20).toFloat()
+                    setStroke(dp(if(choice.id==selectedId)3 else 1),if(choice.id==selectedId)dino.accent else Color.argb(90,80,150,170))
+                }
+                put(mini,dinoView(112,choice))
+                put(mini,text((if(choice.id==selectedId)"✓ " else "")+choice.name,14f,true,choice.accent))
+                put(mini,text(if(choice.id==selectedId)"ACTIVE" else "4 evolution stages",10f,true,if(choice.id==selectedId)dino.accent else Color.GRAY))
+                mini.setOnClickListener{selectedId=choice.id;save();home()}
+                row.addView(mini,LinearLayout.LayoutParams(0,-2,1f).apply{
+                    if(i>start) leftMargin=dp(5)
+                    if(i<start+1) rightMargin=dp(5)
+                })
+            }
+            put(grid,row)
         }
-        strip.addView(row)
-        put(p,strip,dp(160))
+        put(p,grid)
         val r=LinearLayout(this);r.orientation=LinearLayout.HORIZONTAL
         put(r,button("FOOD & CARE"){care()},-2,1f);put(r,button("PLAY"){play()},-2,1f);put(p,r)
         val r2=LinearLayout(this);r2.orientation=LinearLayout.HORIZONTAL
