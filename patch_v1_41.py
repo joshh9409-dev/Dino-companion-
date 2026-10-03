@@ -1140,8 +1140,58 @@ class MainActivity : Activity() {
     private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
 
     inner class DinoView(c:Context):View(c){
-        private val paint=Paint(Paint.ANTI_ALIAS_FLAG)
+        private val paint=Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
+        private var frame=0
+        private val frames=ArrayList<Bitmap>()
+        private val handler=Handler(Looper.getMainLooper())
+        private val animator=object:Runnable{
+            override fun run(){
+                if(frames.size>1){frame=(frame+1)%frames.size;invalidate()}
+                handler.postDelayed(this,180)
+            }
+        }
+        init{
+            loadFrames()
+            isFocusable=false
+        }
+        private fun loadFrames(){
+            frames.clear()
+            for(f in 1..3){
+                val name=dino.id+"_stage"+stage+"_f"+f
+                val id=resources.getIdentifier(name,"drawable",packageName)
+                if(id!=0){
+                    try{
+                        BitmapFactory.decodeResource(resources,id)?.let{frames.add(it)}
+                    }catch(_:Throwable){}
+                }
+            }
+            if(frames.isEmpty()){
+                val id=resources.getIdentifier(dino.id+"_stage"+stage,"drawable",packageName)
+                if(id!=0){
+                    try{BitmapFactory.decodeResource(resources,id)?.let{frames.add(it)}}catch(_:Throwable){}
+                }
+            }
+        }
+        override fun onAttachedToWindow(){
+            super.onAttachedToWindow()
+            handler.removeCallbacks(animator)
+            handler.postDelayed(animator,180)
+        }
+        override fun onDetachedFromWindow(){
+            handler.removeCallbacks(animator)
+            super.onDetachedFromWindow()
+        }
         override fun onDraw(c:Canvas){
+            val b=frames.getOrNull(frame)
+            if(b!=null && !b.isRecycled){
+                val scale=min(width.toFloat()/b.width,height.toFloat()/b.height)*.90f
+                val w=b.width*scale
+                val h=b.height*scale
+                val left=(width-w)/2f
+                val top=(height-h)/2f
+                c.drawBitmap(b,null,RectF(left,top,left+w,top+h),paint)
+                return
+            }
             val cx=width/2f
             val cy=height/2f
             val s=min(width,height).coerceAtLeast(1)/260f
