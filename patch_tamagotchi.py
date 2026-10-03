@@ -78,3 +78,8 @@ g=r/"app/build.gradle.kts"
 if g.exists():
  x=g.read_text();x=re.sub(r'versionCode\s*=\s*\d+','versionCode = 50',x);x=re.sub(r'versionName\s*=\s*"[^"]+"','versionName = "2.0"',x);g.write_text(x)
 (r/"BUILD_VERSION.txt").write_text("Dino Companion 2.0 - Tamagotchi Dino\n")
+# Remove obsolete percentage-based XML layout from the base project; the new screen is Canvas-driven.
+layout=r/"app/src/main/res/layout"
+if layout.exists():
+    shutil.rmtree(layout)
+
