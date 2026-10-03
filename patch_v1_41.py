@@ -971,6 +971,13 @@ class MainActivity : Activity() {
         home()
     }
 
+    override fun onResume(){
+        super.onResume()
+        if(overlayOn && Settings.canDrawOverlays(this)){
+            startDinoOverlay()
+        }
+    }
+
     private fun page(title:String):LinearLayout{
         pageTitle.text=title;content.removeAllViews()
         return LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(12),dp(6),dp(12),dp(12))}
@@ -1073,7 +1080,10 @@ class MainActivity : Activity() {
             }.show()
     }
     private fun startDinoOverlay(){
-        if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED){requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS),41);overlayOn=false;save();return}
+        if(!Settings.canDrawOverlays(this)){
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+packageName)))
+            return
+        }
         try{if(Build.VERSION.SDK_INT>=26)startForegroundService(Intent(this,DinoOverlayService::class.java))else startService(Intent(this,DinoOverlayService::class.java))}catch(_:Exception){overlayOn=false;save()}
     }
     fun stopDinoOverlay(){try{stopService(Intent(this,DinoOverlayService::class.java))}catch(_:Exception){}}
