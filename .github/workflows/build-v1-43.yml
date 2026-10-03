@@ -27,6 +27,8 @@ jobs:
           rm -rf app build.gradle.kts settings.gradle.kts gradle.properties README.md BUILD_VERSION.txt
           unzip -o "$ZIP_FILE" -d .
           python3 patch_v1_41.py
+          python3 postbuild_polish.py
+          test -f BUILD_POLISH_VERSION.txt
           grep -q 'applicationId = "com.example.dinocompanion.v145"' app/build.gradle.kts
           grep -q 'versionName = "1.45"' app/build.gradle.kts
           test -f app/src/main/java/com/example/dinocompanion/MainActivity.kt
