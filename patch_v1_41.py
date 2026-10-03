@@ -480,11 +480,11 @@ class DinoGameView(private val ctx: Context) : View(ctx) {
         }
     }
     private fun feed(){if(food<=0){Toast.makeText(ctx,"No food left. Visit the shop.",Toast.LENGTH_SHORT).show();return};food--;hunger=min(100,hunger+25);energy=min(100,energy+5);happiness=min(100,happiness+3);addXp(8)}
-    private fun clean(){cleanliness=min(100,cleanliness+28);happiness=min(100,happiness+5);addXp(6)}
-    private fun rest(){energy=min(100,energy+30);hunger=max(0,hunger-3);addXp(4)}
-    private fun pet(){happiness=min(100,happiness+12);bond=min(100,bond+5);addXp(5)}
-    private fun dash(){happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2;addXp(15);Toast.makeText(ctx,"Dino Dash complete! +15 XP",Toast.LENGTH_SHORT).show()}
-    private fun ball(){if(toys<=0){Toast.makeText(ctx,"Buy a toy in the shop.",Toast.LENGTH_SHORT).show();return};happiness=min(100,happiness+18);energy=max(0,energy-8);bond=min(100,bond+8);coins+=4;addXp(20);Toast.makeText(ctx,"Great game! +20 XP",Toast.LENGTH_SHORT).show()}
+    private fun clean(){cleanliness=min(100,cleanliness+28);happiness=min(100,happiness+5);DinoLife.onInteraction(prefs,"clean");addXp(6)}
+    private fun rest(){energy=min(100,energy+30);hunger=max(0,hunger-3);DinoLife.onInteraction(prefs,"rest");addXp(4)}
+    private fun pet(){happiness=min(100,happiness+12);bond=min(100,bond+5);DinoLife.onInteraction(prefs,"pet");addXp(5)}
+    private fun dash(){happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2;DinoLife.onInteraction(prefs,"play");addXp(15);Toast.makeText(ctx,"Dino Dash complete! +15 XP",Toast.LENGTH_SHORT).show()}
+    private fun ball(){if(toys<=0){Toast.makeText(ctx,"Buy a toy in the shop.",Toast.LENGTH_SHORT).show();return};happiness=min(100,happiness+18);energy=max(0,energy-8);bond=min(100,bond+8);coins+=4;DinoLife.onInteraction(prefs,"play");addXp(20);Toast.makeText(ctx,"Great game! +20 XP",Toast.LENGTH_SHORT).show()}
     private fun resetDino(){
         dinoName="Rex";selectedId="trex";stage=1;xp=32;hunger=78;happiness=100;energy=79;cleanliness=90;bond=12;coins=52;food=3;toys=1;gems=0;overlayOn=false
         save();(ctx as? MainActivity)?.stopDinoOverlay();invalidate()
@@ -889,7 +889,10 @@ class OverlayView(private val service: DinoOverlayService) : View(service) {
         val w = width.toFloat()
         val h = height.toFloat()
         val species = prefs.getString("species", "trex") ?: "trex"
+        DinoLife.init(service)
+        DinoLife.tick(prefs)
         val stage = prefs.getInt("stage", 1)
+        val mood = DinoLife.mood(prefs)
         if(species!=cachedSpecies || stage!=cachedStage || frames.isEmpty()) loadFrames(species,stage)
 
         paint.alpha = 255
@@ -902,6 +905,11 @@ class OverlayView(private val service: DinoOverlayService) : View(service) {
             c.drawBitmap(b, null, box, paint)
         }
 
+        val bubble = when (mood) { "HUNGRY" -> "Hungry!" "SLEEPY" -> "Zzz..." "DIRTY" -> "Bath?" "SAD" -> "Play?" "CURIOUS" -> "?" else -> "Happy!" }
+        paint.color = Color.argb(225,25,70,92)
+        c.drawRoundRect(w*.12f,h*.78f,w*.88f,h*.91f,16f*density,16f*density,paint)
+        paint.color=Color.WHITE;paint.textAlign=Paint.Align.CENTER;paint.textSize=12f*density;paint.typeface=Typeface.DEFAULT_BOLD
+        c.drawText(bubble,w*.50f,h*.86f,paint)
         if (menu) {
             paint.color = Color.argb(235, 25, 70, 92)
             c.drawRoundRect(w*.03f, h*.76f, w*.97f, h*.97f, 18f*density, 18f*density, paint)
@@ -951,6 +959,8 @@ class OverlayView(private val service: DinoOverlayService) : View(service) {
                             else -> service.hideOverlay()
                         }
                     } else {
+                        DinoLife.onInteraction(prefs,"pet")
+                        prefs.edit().putInt("happiness",(prefs.getInt("happiness",100)+5).coerceAtMost(100)).apply()
                         menu = !menu
                         invalidate()
                     }
@@ -1029,6 +1039,8 @@ class MainActivity : Activity() {
             toys = prefs.getInt("toys",1)
             gems = prefs.getInt("gems",0)
             overlayOn = prefs.getBoolean("overlay",false)
+            DinoLife.init(this)
+            DinoLife.tick(prefs)
             window.statusBarColor=Color.rgb(42,105,150)
             window.navigationBarColor=Color.rgb(19,58,84)
             setContentView(R.layout.activity_main)
@@ -1129,6 +1141,8 @@ class MainActivity : Activity() {
     }
 
     private fun page(title:String):LinearLayout{
+        DinoLife.tick(prefs)
+        syncLifeFromPrefs()
         pageTitle.text=title+"\n🪙 "+coins+"    💎 "+gems
         pageTitle.textSize=19f
         pageTitle.setTextColor(Color.WHITE)
@@ -1323,10 +1337,11 @@ class MainActivity : Activity() {
             startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,Uri.parse("package:"+packageName)))
             return
         }
-        try{if(Build.VERSION.SDK_INT>=26)startForegroundService(Intent(this,DinoOverlayService::class.java))else startService(Intent(this,DinoOverlayService::class.java))}catch(_:Exception){overlayOn=false;save()}
+        try{DinoLife.init(this);if(Build.VERSION.SDK_INT>=26)startForegroundService(Intent(this,DinoOverlayService::class.java))else startService(Intent(this,DinoOverlayService::class.java))}catch(_:Exception){overlayOn=false;save()}
     }
     fun stopDinoOverlay(){try{stopService(Intent(this,DinoOverlayService::class.java))}catch(_:Exception){}}
-    private fun feed(){if(food<=0){toast("No food. Visit the shop.");return};food--;hunger=min(100,hunger+25);energy=min(100,energy+5);happiness=min(100,happiness+3);addXp(8)}
+    private fun syncLifeFromPrefs(){hunger=prefs.getInt("hunger",hunger);happiness=prefs.getInt("happiness",happiness);energy=prefs.getInt("energy",energy);cleanliness=prefs.getInt("cleanliness",cleanliness)}
+    private fun feed(){if(food<=0){toast("No food. Visit the shop.");return};food--;hunger=min(100,hunger+25);energy=min(100,energy+5);happiness=min(100,happiness+3);DinoLife.onInteraction(prefs,"feed");addXp(8)}
     private fun clean(){cleanliness=min(100,cleanliness+28);happiness=min(100,happiness+5);addXp(6)}
     private fun rest(){energy=min(100,energy+30);hunger=max(0,hunger-3);addXp(4)}
     private fun pet(){happiness=min(100,happiness+12);bond=min(100,bond+5);addXp(5)}
@@ -1444,8 +1459,89 @@ layout_dir.mkdir(parents=True, exist_ok=True)
         <Button android:id="@+id/navMore" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="•••\nMORE" android:textSize="10sp"/>
     </LinearLayout>
 </LinearLayout>''',encoding="utf-8")
+
+life_path = root / "app/src/main/java/com/example/dinocompanion/DinoLife.kt"
+life = r'''
+package com.example.dinocompanion
+
+import android.content.Context
+import android.os.BatteryManager
+import java.util.Calendar
+import kotlin.math.max
+import kotlin.math.min
+
+object DinoLife {
+    private const val LAST_TICK = "life_last_tick"
+    private const val MOOD = "life_mood"
+    private const val PLAYFUL = "personality_playful"
+    private const val AFFECTION = "personality_affection"
+    private const val BRAVE = "personality_brave"
+    private var appContext: Context? = null
+
+    fun init(context: Context) { appContext = context.applicationContext }
+
+    fun tick(prefs: android.content.SharedPreferences) {
+        val now = System.currentTimeMillis()
+        val last = prefs.getLong(LAST_TICK, now)
+        val elapsed = ((now - last) / 60000L).coerceIn(0L, 24L * 60L)
+        if (elapsed <= 0L) {
+            prefs.edit().putLong(LAST_TICK, now).apply()
+            return
+        }
+        var hunger = prefs.getInt("hunger", 78)
+        var happiness = prefs.getInt("happiness", 100)
+        var energy = prefs.getInt("energy", 79)
+        var cleanliness = prefs.getInt("cleanliness", 90)
+        hunger = max(0, hunger - (elapsed / 30L).toInt())
+        happiness = max(0, happiness - (elapsed / 45L).toInt())
+        cleanliness = max(0, cleanliness - (elapsed / 90L).toInt())
+        energy = if (hour() >= 23 || hour() < 7) min(100, energy + (elapsed / 18L).toInt()) else max(0, energy - (elapsed / 60L).toInt())
+        val mood = when {
+            hunger < 25 -> "HUNGRY"
+            energy < 20 -> "SLEEPY"
+            cleanliness < 25 -> "DIRTY"
+            happiness < 30 -> "SAD"
+            battery() < 15 -> "SLEEPY"
+            hour() >= 23 || hour() < 6 -> "SLEEPY"
+            happiness > 85 -> "HAPPY"
+            else -> "CURIOUS"
+        }
+        prefs.edit().putInt("hunger",hunger).putInt("happiness",happiness).putInt("energy",energy)
+            .putInt("cleanliness",cleanliness).putString(MOOD,mood).putLong(LAST_TICK,now).apply()
+    }
+
+    fun mood(prefs: android.content.SharedPreferences): String = prefs.getString(MOOD,"HAPPY") ?: "HAPPY"
+
+    fun onInteraction(prefs: android.content.SharedPreferences, kind: String) {
+        val key=when(kind){"play"->PLAYFUL;"pet"->AFFECTION;else->BRAVE}
+        prefs.edit().putInt(key,min(100,prefs.getInt(key,50)+2)).putLong(LAST_TICK,System.currentTimeMillis()).apply()
+    }
+
+    private fun hour()=Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+
+    private fun battery():Int {
+        return try {
+            val bm=appContext?.getSystemService(Context.BATTERY_SERVICE) as? BatteryManager ?: return 100
+            bm.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY).coerceIn(0,100)
+        } catch(_:Throwable){100}
+    }
+}
+'''
+life_path.write_text(life,encoding="utf-8")
+
 main_path = root / "app/src/main/java/com/example/dinocompanion/MainActivity.kt"
 main_path.write_text(final_main,encoding="utf-8")
+
+manifest_path = root / "app/src/main/AndroidManifest.xml"
+if manifest_path.exists():
+    manifest = manifest_path.read_text(encoding="utf-8")
+    if "FOREGROUND_SERVICE_SPECIAL_USE" not in manifest:
+        manifest = manifest.replace("</manifest>", '    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>\\n</manifest>')
+    manifest = manifest.replace('android:name=".DinoOverlayService" android:exported="false"', 'android:name=".DinoOverlayService" android:exported="false" android:foregroundServiceType="specialUse"')
+    if 'PROPERTY_SPECIAL_USE_FGS_SUBTYPE' not in manifest and 'android:name=".DinoOverlayService"' in manifest:
+        manifest = manifest.replace("</service>", '        <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="user-enabled floating virtual companion overlay"/>\\n        </service>', 1)
+    manifest_path.write_text(manifest,encoding="utf-8")
+
 g=root/"app/build.gradle.kts";gs=g.read_text(encoding="utf-8")
 gs=re.sub(r'applicationId\s*=\s*"[^"]+"','applicationId = "com.example.dinocompanion.v145"',gs)
 gs=re.sub(r'versionCode\s*=\s*\d+','versionCode = 48',gs)
