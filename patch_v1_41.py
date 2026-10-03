@@ -1073,14 +1073,26 @@ class MainActivity : Activity() {
     }
     private fun text(t:String,size:Float=14f,bold:Boolean=false,color:Int=Color.DKGRAY)=TextView(this).apply{text=t;textSize=size;setTextColor(color);setTypeface(null,if(bold)Typeface.BOLD else Typeface.NORMAL)}
     private fun button(t:String,color:Int=Color.rgb(67,139,155),action:()->Unit)=Button(this).apply{
+        val normal=android.graphics.drawable.GradientDrawable().apply{
+            setColor(color);cornerRadius=dp(16).toFloat()
+            setStroke(dp(1),Color.argb(70,255,255,255))
+        }
+        val pressed=android.graphics.drawable.GradientDrawable().apply{
+            setColor(android.graphics.Color.rgb(
+                (android.graphics.Color.red(color)*0.82f).toInt(),
+                (android.graphics.Color.green(color)*0.82f).toInt(),
+                (android.graphics.Color.blue(color)*0.82f).toInt()
+            ))
+            cornerRadius=dp(16).toFloat()
+            setStroke(dp(1),Color.argb(120,255,255,255))
+        }
         text=t;textSize=13f;setTextColor(Color.WHITE);isAllCaps=false
         gravity=Gravity.CENTER
         minHeight=dp(50);minimumHeight=dp(50)
         setPadding(dp(10),dp(4),dp(10),dp(4))
-        background=android.graphics.drawable.GradientDrawable().apply{
-            setColor(color)
-            cornerRadius=dp(16).toFloat()
-            setStroke(dp(1),Color.argb(70,255,255,255))
+        background=android.graphics.drawable.StateListDrawable().apply{
+            addState(intArrayOf(android.R.attr.state_pressed),pressed)
+            addState(intArrayOf(),normal)
         }
         elevation=dp(3).toFloat()
         stateListAnimator=null
