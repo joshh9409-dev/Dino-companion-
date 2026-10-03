@@ -1028,7 +1028,12 @@ class MainActivity : Activity() {
         p.addView(v,LinearLayout.LayoutParams(if(weight>0)0 else -1,h).apply{this.weight=weight;bottomMargin=dp(8)})
     }
     private fun text(t:String,size:Float=14f,bold:Boolean=false,color:Int=Color.DKGRAY)=TextView(this).apply{text=t;textSize=size;setTextColor(color);setTypeface(null,if(bold)Typeface.BOLD else Typeface.NORMAL)}
-    private fun button(t:String,action:()->Unit)=Button(this).apply{text=t;textSize=12f;setOnClickListener{action()}}
+    private fun button(t:String,action:()->Unit)=Button(this).apply{
+        text=t;textSize=12f;setTextColor(Color.WHITE);isAllCaps=false
+        background=android.graphics.drawable.GradientDrawable().apply{setColor(Color.rgb(67,139,155));cornerRadius=dp(14).toFloat()}
+        stateListAnimator=null
+        setOnClickListener{action()}
+    }
     private fun card()=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(14),dp(12),dp(14),dp(12));background=bg()}
     private fun bg()=android.graphics.drawable.GradientDrawable().apply{setColor(0xFFF8FDFF.toInt());cornerRadius=dp(18).toFloat()}
     private fun stat(name:String,value:Int)=LinearLayout(this).apply{
@@ -1037,7 +1042,7 @@ class MainActivity : Activity() {
         addView(ProgressBar(this@MainActivity,null,android.R.attr.progressBarStyleHorizontal).apply{max=100;progress=value},
             LinearLayout.LayoutParams(-1,dp(7)))
     }
-    private fun dinoView(h:Int)=DinoView(this).apply{layoutParams=LinearLayout.LayoutParams(-1,dp(h))}
+    private fun dinoView(h:Int,which:Dino=dino)=DinoView(this,which).apply{layoutParams=LinearLayout.LayoutParams(-1,dp(h))}
 
     private fun home(){
         val p=page("DINO COMPANION");val c=card()
@@ -1046,6 +1051,19 @@ class MainActivity : Activity() {
         put(c,stat("Cleanliness",cleanliness));put(c,stat("Bond",bond));put(p,c)
         val d=card();put(d,text("YOUR DINO",15f,true,dino.accent));put(d,dinoView(235))
         put(d,text(if(stage<4)"Evolution: "+xp+" / "+(stage*100)+" XP" else "MAX EVOLUTION",13f,true,dino.accent));put(p,d)
+        put(p,text("YOUR DINOSAURS",15f,true,dino.accent))
+        val strip=HorizontalScrollView(this).apply{isHorizontalScrollBarEnabled=false}
+        val row=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+        dinos.forEach{choice->
+            val mini=card()
+            mini.minimumWidth=dp(145)
+            put(mini,dinoView(105,choice))
+            put(mini,text(choice.name,13f,true,choice.accent))
+            mini.setOnClickListener{selectedId=choice.id;save();home()}
+            row.addView(mini,LinearLayout.LayoutParams(dp(145),-2).apply{rightMargin=dp(8)})
+        }
+        strip.addView(row)
+        put(p,strip,dp(160))
         val r=LinearLayout(this);r.orientation=LinearLayout.HORIZONTAL
         put(r,button("FOOD & CARE"){care()},-2,1f);put(r,button("PLAY"){play()},-2,1f);put(p,r)
         val r2=LinearLayout(this);r2.orientation=LinearLayout.HORIZONTAL
@@ -1066,9 +1084,18 @@ class MainActivity : Activity() {
     }
 
     private fun choose(){
-        val p=page("CHOOSE DINOSAUR");put(p,text("Choose your active dinosaur",14f))
-        dinos.forEach{d->put(p,button((if(d.id==selectedId)"✓ " else "")+d.name){selectedId=d.id;save();choose()})}
-        put(p,button("BACK HOME"){home()});content.addView(p)
+        val p=page("CHOOSE DINOSAUR")
+        put(p,text("Choose your active dinosaur",16f,true,dino.accent))
+        dinos.forEach{choice->
+            val c=card()
+            put(c,dinoView(125,choice))
+            put(c,text((if(choice.id==selectedId)"✓ " else "")+choice.name,16f,true,choice.accent))
+            put(c,text("4 evolution stages",12f,false,Color.GRAY))
+            c.setOnClickListener{selectedId=choice.id;save();choose()}
+            put(p,c)
+        }
+        put(p,button("BACK HOME"){home()})
+        content.addView(p)
     }
 
     private fun play(){
@@ -1139,7 +1166,7 @@ class MainActivity : Activity() {
     private fun toast(s:String)=Toast.makeText(this,s,Toast.LENGTH_SHORT).show()
     private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
 
-    inner class DinoView(c:Context):View(c){
+    inner class DinoView(c:Context, private val displayDino:Dino):View(c){
         private val paint=Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
         private var frame=0
         private val frames=ArrayList<Bitmap>()
@@ -1157,7 +1184,7 @@ class MainActivity : Activity() {
         private fun loadFrames(){
             frames.clear()
             for(f in 1..3){
-                val name=dino.id+"_stage"+stage+"_f"+f
+                val name=displayDino.id+"_stage"+stage+"_f"+f
                 val id=resources.getIdentifier(name,"drawable",packageName)
                 if(id!=0){
                     try{
@@ -1166,7 +1193,7 @@ class MainActivity : Activity() {
                 }
             }
             if(frames.isEmpty()){
-                val id=resources.getIdentifier(dino.id+"_stage"+stage,"drawable",packageName)
+                val id=resources.getIdentifier(displayDino.id+"_stage"+stage,"drawable",packageName)
                 if(id!=0){
                     try{BitmapFactory.decodeResource(resources,id)?.let{frames.add(it)}}catch(_:Throwable){}
                 }
@@ -1195,7 +1222,7 @@ class MainActivity : Activity() {
             val cx=width/2f
             val cy=height/2f
             val s=min(width,height).coerceAtLeast(1)/260f
-            paint.color=dino.accent
+            paint.color=displayDino.accent
             c.drawOval(cx-72f*s,cy-62f*s,cx+72f*s,cy+76f*s,paint)
             c.drawCircle(cx-48f*s,cy-82f*s,24f*s,paint)
             c.drawCircle(cx+48f*s,cy-82f*s,24f*s,paint)
