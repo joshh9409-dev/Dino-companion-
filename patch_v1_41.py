@@ -1287,7 +1287,7 @@ class MainActivity : Activity() {
         val r=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
         put(r,button("🍎  FOOD & CARE",Color.rgb(65,146,72)){care()},-2,1f);put(r,button("🎮  PLAY",Color.rgb(100,82,170)){play()},-2,1f);put(p,r)
         val r2=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
-        put(r2,button("🧬  EVOLVE",Color.rgb(91,128,56)){toast("Evolution requirements shown above")},-2,1f);put(r2,button("🛒  SHOP",Color.rgb(161,108,49)){shop()},-2,1f);put(p,r2)
+        put(r2,button("🧬  EVOLVE",Color.rgb(91,128,56)){if(stage<4&&xp>=stage*100){xp-=stage*100;stage++;coins+=25;bond=min(100,bond+10);happiness=min(100,happiness+12);save();toast("Dino evolved to Stage "+stage+"!");home()}else toast(if(stage>=4)"MAX EVOLUTION REACHED" else "Need "+(stage*100-xp)+" more XP")},-2,1f);put(r2,button("🛒  SHOP",Color.rgb(161,108,49)){shop()},-2,1f);put(p,r2)
         content.addView(p)
     }
 
