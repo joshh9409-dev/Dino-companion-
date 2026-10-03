@@ -1,4 +1,4 @@
-name: Dino Companion v1.46 Complete Build
+name: Dino Companion 2.0 Tamagotchi Build
 
 on:
   push:
@@ -11,53 +11,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Java 17
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
-
-      - name: Extract v1.31 base and generate v1.45
+      - name: Generate Tamagotchi app
         shell: bash
         run: |
           set -euo pipefail
-          ZIP_FILE="DinoCompanion-v1.31-FullyInteractive.zip"
-          test -f "$ZIP_FILE"
+          test -f DinoCompanion-v1.31-FullyInteractive.zip
           rm -rf app build.gradle.kts settings.gradle.kts gradle.properties README.md BUILD_VERSION.txt
-          unzip -o "$ZIP_FILE" -d .
-          python3 patch_v1_41.py
-          python3 postbuild_polish.py
-          python3 postbuild_v146.py
+          unzip -o DinoCompanion-v1.31-FullyInteractive.zip -d .
+          python3 patch_tamagotchi.py
           test -f BUILD_VERSION.txt
-          grep -q 'applicationId = "com.example.dinocompanion.v146"' app/build.gradle.kts
-          grep -q 'versionName = "1.46"' app/build.gradle.kts
-          test -f app/src/main/java/com/example/dinocompanion/MainActivity.kt
-          test -f app/src/main/java/com/example/dinocompanion/DinoOverlayService.kt
-          echo "=== GENERATED MAIN ACTIVITY CHECK ==="
-          grep -n "content.removeAllViews" app/src/main/java/com/example/dinocompanion/MainActivity.kt
-          grep -n "Choose a game" app/src/main/java/com/example/dinocompanion/MainActivity.kt
-          sed -n "335,355p" app/src/main/java/com/example/dinocompanion/MainActivity.kt
-          echo "=== EXACT GENERATED LINE 344 ==="
-          nl -ba app/src/main/java/com/example/dinocompanion/MainActivity.kt | sed -n "344p"
-
-      - name: Gradle 8.11
+          grep -q 'CARE MENU' app/src/main/java/com/example/dinocompanion/MainActivity.kt
+          grep -q 'EGG' app/src/main/java/com/example/dinocompanion/DinoLife.kt
+      - name: Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11'
-
-      - name: Build v1.46 APK
+      - name: Build APK
         run: gradle assembleDebug --stacktrace
-
       - name: Verify APK
-        shell: bash
-        run: |
-          set -euo pipefail
-          ls -lh app/build/outputs/apk/debug/*.apk
-          test -f app/build/outputs/apk/debug/app-debug.apk
-
-      - name: Upload v1.46 APK
+        run: test -f app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: DinoCompanion-v1.46-COMPLETE
+          name: DinoCompanion-2.0-Tamagotchi
           path: app/build/outputs/apk/debug/app-debug.apk
