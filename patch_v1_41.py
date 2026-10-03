@@ -960,24 +960,43 @@ class MainActivity : Activity() {
 
     override fun onCreate(b:Bundle?){
         super.onCreate(b)
-        window.statusBarColor=Color.rgb(42,105,150);window.navigationBarColor=Color.rgb(19,58,84)
-        setContentView(R.layout.activity_main)
-        content=findViewById(R.id.content);pageTitle=findViewById(R.id.pageTitle)
-        findViewById<Button>(R.id.navHome).setOnClickListener{home()}
-        findViewById<Button>(R.id.navCare).setOnClickListener{care()}
-        findViewById<Button>(R.id.navPlay).setOnClickListener{play()}
-        findViewById<Button>(R.id.navShop).setOnClickListener{shop()}
-        findViewById<Button>(R.id.navMore).setOnClickListener{settings()}
-        try { home() } catch (e: Throwable) {
-            content.removeAllViews()
-            val error = TextView(this)
-            error.text = "Dino Companion started, but the home screen failed.\n\n" + e.javaClass.name + "\n" + (e.message ?: "")
-            error.textSize = 16f
-            error.setTextColor(Color.DKGRAY)
-            error.setPadding(32, 48, 32, 48)
-            content.addView(error)
-            android.util.Log.e("DinoCompanion", "Home screen crash", e)
+        try {
+            window.statusBarColor=Color.rgb(42,105,150)
+            window.navigationBarColor=Color.rgb(19,58,84)
+            setContentView(R.layout.activity_main)
+            content=findViewById(R.id.content)
+            pageTitle=findViewById(R.id.pageTitle)
+            findViewById<Button>(R.id.navHome).setOnClickListener{home()}
+            findViewById<Button>(R.id.navCare).setOnClickListener{care()}
+            findViewById<Button>(R.id.navPlay).setOnClickListener{play()}
+            findViewById<Button>(R.id.navShop).setOnClickListener{shop()}
+            findViewById<Button>(R.id.navMore).setOnClickListener{settings()}
+            try { home() } catch (e:Throwable) {
+                showStartupError("HOME",e)
+            }
+        } catch (e:Throwable) {
+            showStartupError("STARTUP",e)
         }
+    }
+
+    private fun showStartupError(where:String,e:Throwable){
+        android.util.Log.e("DinoCompanion","$where crash",e)
+        try {
+            val root=LinearLayout(this)
+            root.orientation=LinearLayout.VERTICAL
+            root.setPadding(24,48,24,24)
+            val title=TextView(this)
+            title.text="Dino Companion diagnostic"
+            title.textSize=22f
+            title.setTextColor(Color.rgb(40,90,110))
+            root.addView(title)
+            val msg=TextView(this)
+            msg.text=where+" failed\\n\\n"+e.javaClass.name+"\\n"+(e.message ?: "No message")
+            msg.textSize=15f
+            msg.setTextColor(Color.DKGRAY)
+            root.addView(msg)
+            setContentView(root)
+        } catch(_:Throwable){}
     }
 
     override fun onResume(){
