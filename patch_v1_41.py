@@ -1101,7 +1101,12 @@ class MainActivity : Activity() {
         }
     }
     private fun put(p:LinearLayout,v:View,h:Int=-2,weight:Float=0f){
-        p.addView(v,LinearLayout.LayoutParams(if(weight>0)0 else -1,h).apply{this.weight=weight;bottomMargin=dp(8)})
+        p.addView(v,LinearLayout.LayoutParams(if(weight>0)0 else -1,h).apply{
+            this.weight=weight
+            bottomMargin=dp(if(weight>0)5 else 8)
+            if(weight>0) marginStart=dp(3)
+            if(weight>0) marginEnd=dp(3)
+        })
     }
     private fun text(t:String,size:Float=14f,bold:Boolean=false,color:Int=Color.DKGRAY)=TextView(this).apply{text=t;textSize=size;setTextColor(color);setTypeface(null,if(bold)Typeface.BOLD else Typeface.NORMAL)}
     private fun button(t:String,color:Int=Color.rgb(67,139,155),action:()->Unit)=Button(this).apply{
