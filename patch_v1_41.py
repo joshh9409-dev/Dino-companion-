@@ -1312,12 +1312,30 @@ class MainActivity : Activity() {
     }
 
     private fun play(){
-        val p=page("PLAY GAMES");put(p,text("Fun mini-games to keep your Dino happy!",15f,true,Color.rgb(255,222,139)))
-        val games=listOf("🫧  BUBBLE POP","🍎  CATCH THE FOOD","🍌  FRUIT TOSS")
-        games.forEachIndexed{i,n->val c=card();put(c,text(n,18f,true,if(i==0)Color.rgb(102,199,255)else if(i==1)Color.rgb(255,192,72)else Color.rgb(134,239,74)));put(c,dinoView(150));put(c,text("Tap to play • earn coins, XP and happiness",11f,false,Color.rgb(220,235,221)));put(c,button("PLAY  •  +"+(15+i*5)+" XP",Color.rgb(73,164,60)){happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2+i;addXp(15+i*5);play()});put(p,c)}
-        put(p,text("Higher scores = better rewards!  🪙  🎁  ♥",13f,true,Color.rgb(255,222,139)));content.addView(p)
+        val p=page("PLAY GAMES")
+        put(p,text("Choose a game and earn XP, coins and happiness.",15f,true,Color.rgb(255,222,139)))
+        val gameNames=listOf("BUBBLE POP","CATCH THE FOOD","FRUIT TOSS")
+        val rewards=listOf(15,20,25)
+        for(i in gameNames.indices){
+            val c=card()
+            put(c,text(gameNames[i],18f,true,if(i==0)Color.rgb(102,199,255)else if(i==1)Color.rgb(255,192,72)else Color.rgb(134,239,74)))
+            put(c,text(if(i==0)"Tap fast to pop bubbles" else if(i==1)"Catch food for your Dino" else "Build your bond with fruit",12f,false,Color.rgb(220,235,221)))
+            put(c,dinoView(125))
+            val reward=rewards[i]
+            put(c,button("PLAY  •  +"+reward+" XP",Color.rgb(73,164,60)){
+                happiness=(happiness+8+i*2).coerceAtMost(100)
+                energy=(energy-4).coerceAtLeast(0)
+                coins+=2+i
+                bond=(bond+2+i).coerceAtMost(100)
+                addXp(reward)
+                toast(gameNames[i]+" complete! +"+reward+" XP")
+                play()
+            })
+            put(p,c)
+        }
+        put(p,text("Play regularly to build your Dino bond.",13f,true,Color.rgb(255,222,139)))
+        content.addView(p)
     }
-
     private fun shop(){
         val p=page("SHOP");put(p,text("Get food, toys, decorations and more!",15f,true,Color.rgb(255,222,139)))
         put(p,text("🪙 "+coins+"    💎 "+gems,16f,true,Color.WHITE))
