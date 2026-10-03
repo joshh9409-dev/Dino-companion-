@@ -1210,22 +1210,36 @@ class MainActivity : Activity() {
             isFocusable=false
         }
         private fun loadFrames(){
-            frames.clear()
+            releaseFrames()
             for(f in 1..3){
                 val name=displayDino.id+"_stage"+stage+"_f"+f
                 val id=resources.getIdentifier(name,"drawable",packageName)
                 if(id!=0){
                     try{
-                        BitmapFactory.decodeResource(resources,id)?.let{frames.add(it)}
+                        BitmapFactory.decodeResource(resources,id)?.let{
+                            it.prepareToDraw()
+                            frames.add(it)
+                        }
                     }catch(_:Throwable){}
                 }
             }
             if(frames.isEmpty()){
                 val id=resources.getIdentifier(displayDino.id+"_stage"+stage,"drawable",packageName)
                 if(id!=0){
-                    try{BitmapFactory.decodeResource(resources,id)?.let{frames.add(it)}}catch(_:Throwable){}
+                    try{
+                        BitmapFactory.decodeResource(resources,id)?.let{
+                            it.prepareToDraw()
+                            frames.add(it)
+                        }
+                    }catch(_:Throwable){}
                 }
             }
+        }
+        private fun releaseFrames(){
+            frames.forEach{b->
+                try{if(!b.isRecycled)b.recycle()}catch(_:Throwable){}
+            }
+            frames.clear()
         }
         override fun onAttachedToWindow(){
             super.onAttachedToWindow()
@@ -1234,6 +1248,7 @@ class MainActivity : Activity() {
         }
         override fun onDetachedFromWindow(){
             handler.removeCallbacks(animator)
+            releaseFrames()
             super.onDetachedFromWindow()
         }
         override fun onDraw(c:Canvas){
