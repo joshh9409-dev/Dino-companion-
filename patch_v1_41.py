@@ -537,7 +537,12 @@ class DinoOverlayService : Service() {
         try{wm?.addView(view,lp)}catch(_:Exception){}
     }
 
-    private fun wander(){ val p=params?:return; val now=System.currentTimeMillis(); if(now<nextWander)return; nextWander=now+180L; val maxX=(resources.displayMetrics.widthPixels-p.width-8).coerceAtLeast(8); p.x=(p.x+wanderDirection*2).coerceIn(8,maxX); if(p.x<=8||p.x>=maxX)wanderDirection=-wanderDirection; try{view?.let{wm?.updateViewLayout(it,p)}}catch(_:Exception){} }
+    private fun wander(){ val p=params?:return; val now=System.currentTimeMillis(); if(now<nextWander)return; nextWander=now+180L
+        val hour=java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
+        val battery=(getSystemService(BATTERY_SERVICE) as? BatteryManager)?.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY)?:100
+        if((hour>=23||hour<7||battery<15)&&sleepUntil<now)sleepUntil=now+12000L
+        if(sleepUntil>now)return
+        if(boredUntil<now&&kotlin.random.Random.nextInt(100)<3)boredUntil=now+3000L; val maxX=(resources.displayMetrics.widthPixels-p.width-8).coerceAtLeast(8); p.x=(p.x+wanderDirection*2).coerceIn(8,maxX); if(p.x<=8||p.x>=maxX)wanderDirection=-wanderDirection; try{view?.let{wm?.updateViewLayout(it,p)}}catch(_:Exception){} }
 
     override fun onDestroy(){try{view?.let{wm?.removeView(it)}}catch(_:Exception){};view=null;super.onDestroy()}
     override fun onBind(intent:Intent?):IBinder?=null
