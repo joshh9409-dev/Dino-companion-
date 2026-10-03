@@ -18,7 +18,7 @@ s = s.replace(
     'put(r2,button("🧬  EVOLVE",Color.rgb(91,128,56)){evolvePage()},-2,1f)'
 )
 
-# Upgrade Play by replacing the method as a whole. This avoids brittle one-line source matching.
+# Upgrade Play by replacing the method between exact Kotlin method boundaries.
 play_method = r'''    private fun play(){
         val p=page("PLAY GAMES")
         put(p,text("Choose a game and earn XP, coins and happiness.",15f,true,Color.rgb(255,222,139)))
@@ -47,7 +47,9 @@ play_method = r'''    private fun play(){
         content.addView(p)
     }
 '''
-s = re.sub(r'    private fun play\(\)\{.*?\n    \}\n\n    private fun shop\(\)', play_method + '\n    private fun shop()', s, flags=re.S)
+play_start=s.index("    private fun play(){")
+play_end=s.index("    private fun shop(){",play_start)
+s=s[:play_start]+play_method+s[play_end:]
 # Add a proper evolution page.
 marker='''    private fun choose(){'''
 evolve='''    private fun evolvePage(){\n        val p=page("EVOLUTION")\n        put(p,text("Help "+dinoName+" grow through four stages.",15f,true,Color.rgb(255,222,139)))\n        val c=card()\n        put(c,dinoView(260))\n        put(c,text("STAGE "+stage+" / 4",20f,true,Color.rgb(157,235,94)))\n        val need=stage*100\n        if(stage<4){\n            put(c,text(xp+" / "+need+" XP to evolve",13f,true,Color.WHITE))\n            put(c,ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal).apply{\n                max=need;progress=xp.coerceIn(0,need)\n                progressTintList=android.content.res.ColorStateList.valueOf(Color.rgb(102,231,58))\n                progressBackgroundTintList=android.content.res.ColorStateList.valueOf(Color.rgb(24,31,32))\n            },dp(12))\n            put(c,button(if(xp>=need)"EVOLVE NOW" else "KEEP PLAYING",Color.rgb(91,128,56)){\n                if(xp>=need){ addXp(0); evolvePage() } else toast("Earn "+(need-xp)+" more XP")\n            })\n        }else{\n            put(c,text("MAX EVOLUTION REACHED",15f,true,Color.rgb(255,222,139)))\n        }\n        put(p,c)\n        put(p,button("‹  BACK HOME",Color.rgb(65,128,172)){home()})\n        content.addView(p)\n    }\n\n'''
