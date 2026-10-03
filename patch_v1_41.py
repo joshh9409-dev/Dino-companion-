@@ -1154,8 +1154,6 @@ class MainActivity : Activity() {
     }
 
     private fun page(title:String):LinearLayout{
-        val foldMode=FoldState.label(this)
-        root.setPadding(if(foldMode=="COMPACT") 2 else 8,4,if(foldMode=="COMPACT") 2 else 8,4)
         DinoLife.tick(prefs)
         syncLifeFromPrefs()
         pageTitle.text=title+"\n🪙 "+coins+"    💎 "+gems
@@ -1522,15 +1520,6 @@ layout_dir.mkdir(parents=True, exist_ok=True)
 life_path = root / "app/src/main/java/com/example/dinocompanion/DinoLife.kt"
 life = r'''
 package com.example.dinocompanion
-
-object FoldState {
-    fun isCompact(context: Context): Boolean {
-        val dm=context.resources.displayMetrics
-        val shortest=(minOf(dm.widthPixels,dm.heightPixels)/dm.density).toInt()
-        return shortest < 600
-    }
-    fun label(context: Context): String = if(isCompact(context)) "COMPACT" else "EXPANDED"
-}
 
 import android.content.Context
 import android.hardware.Sensor
