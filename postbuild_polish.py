@@ -70,12 +70,12 @@ class DinoOverlayService : Service() {
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
         else WindowManager.LayoutParams.TYPE_PHONE
 
-        val density = resources.displayMetrics.density
         val screenW = resources.displayMetrics.widthPixels
         val screenH = resources.displayMetrics.heightPixels
-        val compact = screenW < (700 * density)
-        val width = if (compact) (220 * density).toInt() else (260 * density).toInt()
-        val height = if (compact) (260 * density).toInt() else (300 * density).toInt()
+        // Keep the companion genuinely compact on high-density phones. These are
+        // window pixels, not dp values, because WindowManager.LayoutParams uses px.
+        val width = (screenW * 0.34f).toInt().coerceIn(190, 270)
+        val height = (width * 1.18f).toInt().coerceIn(225, 320)
 
         val lp = WindowManager.LayoutParams(
             width, height, type,
