@@ -508,6 +508,9 @@ import android.view.*
 class DinoOverlayService : Service() {
     private var wm: WindowManager? = null
     private var view: OverlayView? = null
+    private var params: WindowManager.LayoutParams? = null
+    private var wanderDirection = 1
+    private var nextWander = 0L
 
     override fun onCreate() {
         super.onCreate()
@@ -530,8 +533,11 @@ class DinoOverlayService : Service() {
         val type=if(Build.VERSION.SDK_INT>=26)WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY else WindowManager.LayoutParams.TYPE_PHONE
         val lp=WindowManager.LayoutParams(220,260,type,WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,PixelFormat.TRANSLUCENT)
         lp.gravity=Gravity.TOP or Gravity.END;lp.x=8;lp.y=170
+        params=lp
         try{wm?.addView(view,lp)}catch(_:Exception){}
     }
+
+    private fun wander(){ val p=params?:return; val now=System.currentTimeMillis(); if(now<nextWander)return; nextWander=now+180L; val maxX=(resources.displayMetrics.widthPixels-p.width-8).coerceAtLeast(8); p.x=(p.x+wanderDirection*2).coerceIn(8,maxX); if(p.x<=8||p.x>=maxX)wanderDirection=-wanderDirection; try{view?.let{wm?.updateViewLayout(it,p)}}catch(_:Exception){} }
 
     override fun onDestroy(){try{view?.let{wm?.removeView(it)}}catch(_:Exception){};view=null;super.onDestroy()}
     override fun onBind(intent:Intent?):IBinder?=null
@@ -543,7 +549,7 @@ class OverlayView(ctx:Context):View(ctx){
     private var tick=0
     private var drift=0f
     private var driftDir=1f
-    init{post(object:Runnable{override fun run(){tick++;drift+=driftDir*0.8f;if(drift>18f||drift< -18f)driftDir=-driftDir;invalidate();postDelayed(this,90)}})}
+    init{post(object:Runnable{override fun run(){tick++;drift+=driftDir*0.8f;if(drift>18f||drift< -18f)driftDir=-driftDir;service.wander();invalidate();postDelayed(this,90)}})}
     override fun onDraw(c:Canvas){
         val species=prefs.getString("species","trex")?:"trex"
         val stage=prefs.getInt("stage",1)
