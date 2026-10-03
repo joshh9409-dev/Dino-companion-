@@ -1259,15 +1259,20 @@ class MainActivity : Activity() {
         content.addView(p)
     }
     private fun shop(){
-        val p=page("SHOP");put(p,text("Coins: "+coins+"   •   Gems: "+gems,15f,true))
+        val p=page("SHOP")
+        put(p,text("Dino Shop",20f,true,dino.accent))
+        put(p,text("Coins: "+coins+"   •   Gems: "+gems,13f,true,Color.rgb(75,105,115)))
         buy(p,"FOOD PACK","3 meals • 10 coins"){if(coins>=10){coins-=10;food+=3;save();shop()}else toast("Not enough coins")}
         buy(p,"TOY","1 toy • 18 coins"){if(coins>=18){coins-=18;toys++;save();shop()}else toast("Not enough coins")}
         buy(p,"GEM","1 gem • 50 coins"){if(coins>=50){coins-=50;gems++;save();shop()}else toast("Not enough coins")}
         buy(p,"XP BOOST","+50 XP • 35 coins"){if(coins>=35){coins-=35;addXp(50);shop()}else toast("Not enough coins")}
-        put(p,button("FREE DAILY COIN",Color.rgb(190,130,67)){coins++;save();shop()});content.addView(p)
+        val daily=card()
+        put(daily,text("DAILY REWARD",15f,true,dino.accent))
+        put(daily,text("Claim a free coin for today's care session.",12f,false,Color.rgb(75,105,115)))
+        put(daily,button("FREE DAILY COIN",Color.rgb(190,130,67)){coins++;save();shop()})
+        put(p,daily)
+        content.addView(p)
     }
-    private fun buy(p:LinearLayout,n:String,d:String,a:()->Unit){val c=card();put(c,text(n,16f,true,dino.accent));put(c,text(d));put(c,button("BUY",Color.rgb(190,130,67)){a()});put(p,c)}
-
     private fun inventory(){
         val p=page("INVENTORY")
         put(p,card().apply{put(this,text("FOOD: "+food,16f,true));put(this,text("Meals ready to use"))})
