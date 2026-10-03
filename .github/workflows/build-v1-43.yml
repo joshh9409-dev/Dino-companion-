@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -27,7 +27,7 @@ jobs:
           rm -rf app build.gradle.kts settings.gradle.kts gradle.properties README.md BUILD_VERSION.txt
           unzip -o "$ZIP_FILE" -d .
           python3 patch_v1_41.py
-          grep -q 'applicationId = "com.example.dinocompanion.v143"' app/build.gradle.kts
+          grep -q 'applicationId = "com.example.dinocompanion.v145"' app/build.gradle.kts
           grep -q 'versionName = "1.45"' app/build.gradle.kts
           test -f app/src/main/java/com/example/dinocompanion/MainActivity.kt
           test -f app/src/main/java/com/example/dinocompanion/DinoOverlayService.kt
