@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 root = Path(".")
 main_path = root / "app/src/main/java/com/example/dinocompanion/MainActivity.kt"
@@ -17,11 +18,36 @@ s = s.replace(
     'put(r2,button("🧬  EVOLVE",Color.rgb(91,128,56)){evolvePage()},-2,1f)'
 )
 
-# Upgrade Play into clearly separated, usable game cards while keeping the app lightweight.
-old_play='''    private fun play(){\n        val p=page("PLAY GAMES");put(p,text("Fun mini-games to keep your Dino happy!",15f,true,Color.rgb(255,222,139)))\n        val games=listOf("🫧  BUBBLE POP","🍎  CATCH THE FOOD","🍌  FRUIT TOSS")\n        games.forEachIndexed{i,n->val c=card();put(c,text(n,18f,true,if(i==0)Color.rgb(102,199,255)else if(i==1)Color.rgb(255,192,72)else Color.rgb(134,239,74)));put(c,dinoView(150));put(c,text("Tap to play • earn coins, XP and happiness",11f,false,Color.rgb(220,235,221)));put(c,button("PLAY  •  +"+(15+i*5)+" XP",Color.rgb(73,164,60)){happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2+i;addXp(15+i*5);play()});put(p,c)}\n        put(p,text("Higher scores = better rewards!  🪙  🎁  ♥",13f,true,Color.rgb(255,222,139)));content.addView(p)\n    }'''
-new_play='''    private fun play(){\n        val p=page("PLAY GAMES")\n        put(p,text("Choose a game and earn XP, coins and happiness.",15f,true,Color.rgb(255,222,139)))\n        val games=listOf(\n            Triple("🫧  BUBBLE POP","Tap fast to pop bubbles",15),\n            Triple("🍎  CATCH THE FOOD","Catch food for your Dino",20),\n            Triple("🍌  FRUIT TOSS","Build your bond with fruit",25)\n        )\n        games.forEachIndexed{i,g->\n            val c=card()\n            put(c,text(g.first,18f,true,if(i==0)Color.rgb(102,199,255)else if(i==1)Color.rgb(255,192,72)else Color.rgb(134,239,74)))\n            put(c,text(g.second,12f,false,Color.rgb(220,235,221)))\n            put(c,dinoView(125))\n            put(c,button("PLAY  •  +"+g.third+" XP",Color.rgb(73,164,60)){\n                happiness=min(100,happiness+8+i*2);energy=max(0,energy-4);coins+=2+i;bond=min(100,bond+2+i);addXp(g.third);toast(g.first.substringAfter("  ")+" complete! +"+g.third+" XP");play()\n            })\n            put(p,c)\n        }\n        put(p,text("Play regularly to build your Dino's bond.",13f,true,Color.rgb(255,222,139)))\n        content.addView(p)\n    }'''
-if old_play in s: s=s.replace(old_play,new_play)
-
+# Upgrade Play by replacing the method as a whole. This avoids brittle one-line source matching.
+play_method = r'''    private fun play(){
+        val p=page("PLAY GAMES")
+        put(p,text("Choose a game and earn XP, coins and happiness.",15f,true,Color.rgb(255,222,139)))
+        val games=listOf(
+            Triple("BUBBLE POP","Tap fast to pop bubbles",15),
+            Triple("CATCH THE FOOD","Catch food for your Dino",20),
+            Triple("FRUIT TOSS","Build your bond with fruit",25)
+        )
+        games.forEachIndexed { i, game ->
+            val c=card()
+            put(c,text(game.first,18f,true,if(i==0)Color.rgb(102,199,255)else if(i==1)Color.rgb(255,192,72)else Color.rgb(134,239,74)))
+            put(c,text(game.second,12f,false,Color.rgb(220,235,221)))
+            put(c,dinoView(125))
+            put(c,button("PLAY  •  +"+game.third+" XP",Color.rgb(73,164,60)){
+                happiness=(happiness+8+i*2).coerceAtMost(100)
+                energy=(energy-4).coerceAtLeast(0)
+                coins+=2+i
+                bond=(bond+2+i).coerceAtMost(100)
+                addXp(game.third)
+                toast(game.first+" complete! +"+game.third+" XP")
+                play()
+            })
+            put(p,c)
+        }
+        put(p,text("Play regularly to build your Dino's bond.",13f,true,Color.rgb(255,222,139)))
+        content.addView(p)
+    }
+'''
+s = re.sub(r'    private fun play\(\)\{.*?\n    \}\n\n    private fun shop\(\)', play_method + '\n    private fun shop()', s, flags=re.S)
 # Add a proper evolution page.
 marker='''    private fun choose(){'''
 evolve='''    private fun evolvePage(){\n        val p=page("EVOLUTION")\n        put(p,text("Help "+dinoName+" grow through four stages.",15f,true,Color.rgb(255,222,139)))\n        val c=card()\n        put(c,dinoView(260))\n        put(c,text("STAGE "+stage+" / 4",20f,true,Color.rgb(157,235,94)))\n        val need=stage*100\n        if(stage<4){\n            put(c,text(xp+" / "+need+" XP to evolve",13f,true,Color.WHITE))\n            put(c,ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal).apply{\n                max=need;progress=xp.coerceIn(0,need)\n                progressTintList=android.content.res.ColorStateList.valueOf(Color.rgb(102,231,58))\n                progressBackgroundTintList=android.content.res.ColorStateList.valueOf(Color.rgb(24,31,32))\n            },dp(12))\n            put(c,button(if(xp>=need)"EVOLVE NOW" else "KEEP PLAYING",Color.rgb(91,128,56)){\n                if(xp>=need){ addXp(0); evolvePage() } else toast("Earn "+(need-xp)+" more XP")\n            })\n        }else{\n            put(c,text("MAX EVOLUTION REACHED",15f,true,Color.rgb(255,222,139)))\n        }\n        put(p,c)\n        put(p,button("‹  BACK HOME",Color.rgb(65,128,172)){home()})\n        content.addView(p)\n    }\n\n'''
