@@ -968,7 +968,16 @@ class MainActivity : Activity() {
         findViewById<Button>(R.id.navPlay).setOnClickListener{play()}
         findViewById<Button>(R.id.navShop).setOnClickListener{shop()}
         findViewById<Button>(R.id.navMore).setOnClickListener{settings()}
-        home()
+        try { home() } catch (e: Throwable) {
+            content.removeAllViews()
+            val error = TextView(this)
+            error.text = "Dino Companion started, but the home screen failed.\n\n" + e.javaClass.name + "\n" + (e.message ?: "")
+            error.textSize = 16f
+            error.setTextColor(Color.DKGRAY)
+            error.setPadding(32, 48, 32, 48)
+            content.addView(error)
+            android.util.Log.e("DinoCompanion", "Home screen crash", e)
+        }
     }
 
     override fun onResume(){
