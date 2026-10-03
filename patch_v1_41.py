@@ -1208,15 +1208,23 @@ class MainActivity : Activity() {
     }
 
     private fun care(){
-        val p=page("FOOD & CARE");val c=card()
-        put(c,text("Keep "+dinoName+" healthy and happy",16f,true,dino.accent));put(c,dinoView(205))
-        put(c,stat("Hunger",hunger));put(c,stat("Happiness",happiness));put(c,stat("Energy",energy));put(c,stat("Cleanliness",cleanliness))
-        val r=LinearLayout(this);r.orientation=LinearLayout.HORIZONTAL
-        put(r,button("FEED ("+food+")",Color.rgb(93,164,92)){feed();care()},-2,1f);put(r,button("CLEAN",Color.rgb(73,158,181)){clean();care()},-2,1f);put(c,r)
-        val r2=LinearLayout(this);r2.orientation=LinearLayout.HORIZONTAL
-        put(r2,button("REST",Color.rgb(76,122,181)){rest();care()},-2,1f);put(r2,button("PET",Color.rgb(175,91,135)){pet();care()},-2,1f);put(c,r2);content.addView(p)
+        val p=page("FOOD & CARE")
+        val c=card()
+        put(c,text("Keep "+dinoName+" healthy and happy",18f,true,dino.accent))
+        put(c,text("Care for your companion and build your bond.",12f,false,Color.rgb(75,105,115)))
+        put(c,dinoView(210))
+        put(c,text("NEEDS",14f,true,dino.accent))
+        put(c,stat("Hunger",hunger));put(c,stat("Happiness",happiness))
+        put(c,stat("Energy",energy));put(c,stat("Cleanliness",cleanliness))
+        val r=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+        put(r,button("FEED  •  "+food,Color.rgb(93,164,92)){feed();care()},-2,1f)
+        put(r,button("CLEAN",Color.rgb(73,158,181)){clean();care()},-2,1f);put(c,r)
+        val r2=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+        put(r2,button("REST",Color.rgb(76,122,181)){rest();care()},-2,1f)
+        put(r2,button("PET  ♥",Color.rgb(175,91,135)){pet();care()},-2,1f);put(c,r2)
+        put(c,text("Bond: "+bond+"%   •   Food: "+food+"   •   Toys: "+toys,12f,true,dino.accent))
+        content.addView(p)
     }
-
     private fun choose(){
         val p=page("CHOOSE DINOSAUR")
         put(p,text("Choose your active dinosaur",16f,true,dino.accent))
