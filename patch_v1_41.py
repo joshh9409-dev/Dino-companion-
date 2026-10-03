@@ -541,23 +541,25 @@ class OverlayView(ctx:Context):View(ctx){
     private val prefs=ctx.getSharedPreferences("dino_companion",Context.MODE_PRIVATE)
     private val paint=Paint(Paint.ANTI_ALIAS_FLAG)
     private var tick=0
-    init{post(object:Runnable{override fun run(){tick++;invalidate();postDelayed(this,180)}})}
+    private var drift=0f
+    private var driftDir=1f
+    init{post(object:Runnable{override fun run(){tick++;drift+=driftDir*0.8f;if(drift>18f||drift< -18f)driftDir=-driftDir;invalidate();postDelayed(this,90)}})}
     override fun onDraw(c:Canvas){
         val species=prefs.getString("species","trex")?:"trex"
         val stage=prefs.getInt("stage",1)
         var id=resources.getIdentifier(species+"_stage"+stage+"_f"+(tick%3+1),"drawable",context.packageName)
         if(id==0)id=resources.getIdentifier(species+"_stage"+stage,"drawable",context.packageName)
         paint.color=Color.argb(70,0,0,0)
-        c.drawOval(35f,190f,155f,212f,paint)
+        c.drawOval(35f+drift,190f,155f+drift,212f,paint)
         paint.alpha=255
         if(id!=0){
             val b=BitmapFactory.decodeResource(resources,id)
-            c.drawBitmap(b,null,RectF(15f,10f,175f,205f),paint)
+            c.drawBitmap(b,null,RectF(15f+drift,10f,175f+drift,205f),paint)
             b.recycle()
         }else{
             paint.color=Color.rgb(87,157,91)
             paint.alpha=255
-            c.drawCircle(95f,105f,60f,paint)
+            c.drawCircle(95f+drift,105f,60f,paint)
         }
     }
     override fun onTouchEvent(e:MotionEvent):Boolean{
