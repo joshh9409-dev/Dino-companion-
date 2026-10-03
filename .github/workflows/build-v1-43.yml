@@ -34,6 +34,10 @@ jobs:
           grep -q 'versionName = "1.46"' app/build.gradle.kts
           test -f app/src/main/java/com/example/dinocompanion/MainActivity.kt
           test -f app/src/main/java/com/example/dinocompanion/DinoOverlayService.kt
+          echo "=== GENERATED MAIN ACTIVITY CHECK ==="
+          grep -n "content.removeAllViews" app/src/main/java/com/example/dinocompanion/MainActivity.kt
+          grep -n "Choose a game" app/src/main/java/com/example/dinocompanion/MainActivity.kt
+          sed -n "335,355p" app/src/main/java/com/example/dinocompanion/MainActivity.kt
 
       - name: Gradle 8.11
         uses: gradle/actions/setup-gradle@v4
