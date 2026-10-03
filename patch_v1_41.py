@@ -1166,7 +1166,7 @@ class MainActivity : Activity() {
     private fun toast(s:String)=Toast.makeText(this,s,Toast.LENGTH_SHORT).show()
     private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
 
-    inner class DinoView(c:Context, private val displayDino:Dino):View(c){
+    private inner class DinoView(c:Context, private val displayDino:Dino):View(c){
         private val paint=Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
         private var frame=0
         private val frames=ArrayList<Bitmap>()
