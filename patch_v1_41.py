@@ -1017,11 +1017,43 @@ class MainActivity : Activity() {
             setContentView(R.layout.activity_main)
             content=findViewById(R.id.content)
             pageTitle=findViewById(R.id.pageTitle)
-            findViewById<Button>(R.id.navHome).setOnClickListener{home()}
-            findViewById<Button>(R.id.navCare).setOnClickListener{care()}
-            findViewById<Button>(R.id.navPlay).setOnClickListener{play()}
-            findViewById<Button>(R.id.navShop).setOnClickListener{shop()}
-            findViewById<Button>(R.id.navMore).setOnClickListener{settings()}
+            val navs=listOf(
+                findViewById<Button>(R.id.navHome),
+                findViewById<Button>(R.id.navCare),
+                findViewById<Button>(R.id.navPlay),
+                findViewById<Button>(R.id.navShop),
+                findViewById<Button>(R.id.navMore)
+            )
+            navs.forEach{b->
+                b.setTextColor(Color.rgb(45,86,103))
+                b.textSize=11f
+                b.minHeight=dp(48);b.minimumHeight=dp(48)
+                b.setPadding(dp(3),dp(3),dp(3),dp(3))
+                b.background=android.graphics.drawable.GradientDrawable().apply{
+                    setColor(0xFFF1FAFD.toInt())
+                    cornerRadius=dp(14).toFloat()
+                    setStroke(dp(1),0x30609BB0)
+                }
+                b.stateListAnimator=null
+            }
+            fun selectNav(index:Int){
+                navs.forEachIndexed{i,b->
+                    val active=i==index
+                    b.setTextColor(if(active)Color.WHITE else Color.rgb(45,86,103))
+                    b.background=android.graphics.drawable.GradientDrawable().apply{
+                        setColor(if(active)Color.rgb(58,139,160) else 0xFFF1FAFD.toInt())
+                        cornerRadius=dp(14).toFloat()
+                        setStroke(dp(1),if(active)0x80FFFFFF else 0x30609BB0)
+                    }
+                    b.elevation=if(active)dp(3).toFloat() else 0f
+                }
+            }
+            navs[0].setOnClickListener{selectNav(0);home()}
+            navs[1].setOnClickListener{selectNav(1);care()}
+            navs[2].setOnClickListener{selectNav(2);play()}
+            navs[3].setOnClickListener{selectNav(3);shop()}
+            navs[4].setOnClickListener{selectNav(4);settings()}
+            selectNav(0)
             try { home() } catch (e:Throwable) {
                 showStartupError("HOME",e)
             }
