@@ -1,4 +1,4 @@
-name: Dino Companion v1.45 Complete Build
+name: Dino Companion v1.46 Complete Build
 
 on:
   push:
@@ -28,9 +28,10 @@ jobs:
           unzip -o "$ZIP_FILE" -d .
           python3 patch_v1_41.py
           python3 postbuild_polish.py
-          test -f BUILD_POLISH_VERSION.txt
-          grep -q 'applicationId = "com.example.dinocompanion.v145"' app/build.gradle.kts
-          grep -q 'versionName = "1.45"' app/build.gradle.kts
+          python3 postbuild_v146.py
+          test -f BUILD_VERSION.txt
+          grep -q 'applicationId = "com.example.dinocompanion.v146"' app/build.gradle.kts
+          grep -q 'versionName = "1.46"' app/build.gradle.kts
           test -f app/src/main/java/com/example/dinocompanion/MainActivity.kt
           test -f app/src/main/java/com/example/dinocompanion/DinoOverlayService.kt
 
@@ -39,7 +40,7 @@ jobs:
         with:
           gradle-version: '8.11'
 
-      - name: Build complete APK
+      - name: Build v1.46 APK
         run: gradle assembleDebug --stacktrace
 
       - name: Verify APK
@@ -49,8 +50,8 @@ jobs:
           ls -lh app/build/outputs/apk/debug/*.apk
           test -f app/build/outputs/apk/debug/app-debug.apk
 
-      - name: Upload v1.45 APK
+      - name: Upload v1.46 APK
         uses: actions/upload-artifact@v4
         with:
-          name: DinoCompanion-v1.45-COMPLETE
+          name: DinoCompanion-v1.46-COMPLETE
           path: app/build/outputs/apk/debug/app-debug.apk
