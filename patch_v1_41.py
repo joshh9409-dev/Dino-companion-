@@ -934,21 +934,21 @@ import kotlin.math.min
 class MainActivity : Activity() {
     private lateinit var content: FrameLayout
     private lateinit var pageTitle: TextView
-    private val prefs by lazy { getSharedPreferences("dino_companion", Context.MODE_PRIVATE) }
-    private var selectedId = prefs.getString("species","trex") ?: "trex"
-    private var dinoName = prefs.getString("name","Rex") ?: "Rex"
-    private var stage = prefs.getInt("stage",1)
-    private var xp = prefs.getInt("xp",32)
-    private var hunger = prefs.getInt("hunger",78)
-    private var happiness = prefs.getInt("happiness",100)
-    private var energy = prefs.getInt("energy",79)
-    private var cleanliness = prefs.getInt("cleanliness",90)
-    private var bond = prefs.getInt("bond",12)
-    private var coins = prefs.getInt("coins",52)
-    private var food = prefs.getInt("food",3)
-    private var toys = prefs.getInt("toys",1)
-    private var gems = prefs.getInt("gems",0)
-    private var overlayOn = prefs.getBoolean("overlay",false)
+    private lateinit var prefs: android.content.SharedPreferences
+    private var selectedId = "trex"
+    private var dinoName = "Rex"
+    private var stage = 1
+    private var xp = 32
+    private var hunger = 78
+    private var happiness = 100
+    private var energy = 79
+    private var cleanliness = 90
+    private var bond = 12
+    private var coins = 52
+    private var food = 3
+    private var toys = 1
+    private var gems = 0
+    private var overlayOn = false
     private data class Dino(val id:String,val name:String,val accent:Int)
     private val dinos=listOf(
         Dino("trex","T-Rex",Color.rgb(52,112,61)),
@@ -961,6 +961,21 @@ class MainActivity : Activity() {
     override fun onCreate(b:Bundle?){
         super.onCreate(b)
         try {
+            prefs = getSharedPreferences("dino_companion", Context.MODE_PRIVATE)
+            selectedId = prefs.getString("species","trex") ?: "trex"
+            dinoName = prefs.getString("name","Rex") ?: "Rex"
+            stage = prefs.getInt("stage",1)
+            xp = prefs.getInt("xp",32)
+            hunger = prefs.getInt("hunger",78)
+            happiness = prefs.getInt("happiness",100)
+            energy = prefs.getInt("energy",79)
+            cleanliness = prefs.getInt("cleanliness",90)
+            bond = prefs.getInt("bond",12)
+            coins = prefs.getInt("coins",52)
+            food = prefs.getInt("food",3)
+            toys = prefs.getInt("toys",1)
+            gems = prefs.getInt("gems",0)
+            overlayOn = prefs.getBoolean("overlay",false)
             window.statusBarColor=Color.rgb(42,105,150)
             window.navigationBarColor=Color.rgb(19,58,84)
             setContentView(R.layout.activity_main)
