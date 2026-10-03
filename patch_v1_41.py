@@ -1330,9 +1330,36 @@ class MainActivity : Activity() {
     private fun buy(p:LinearLayout,n:String,d:String,color:Int,a:()->Unit){val c=card();put(c,text(n,17f,true,Color.WHITE));put(c,text(d,12f,false,Color.rgb(220,235,221)));put(c,button("BUY",color,a));put(p,c)}
 
     private fun inventory(){
-        val p=page("INVENTORY");put(p,text("Items, food, toys, decorations & more!",14f,true,Color.rgb(255,222,139)))
-        val items=listOf("🍖 Dino Kibble" to food,"🍎 Apple" to food+2,"⚽ Beach Ball" to toys,"💎 Growth Crystal" to gems,"🦴 Bone Treat" to max(1,food+4),"🏆 Special Item" to max(1,gems))
-        for(start in items.indices step 2){val r=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL};for(i in start until min(start+2,items.size)){val c=card();put(c,text(items[i].first,16f,true,Color.WHITE));put(c,text("x"+items[i].second,13f,true,Color.rgb(157,235,94)));put(c,button("USE",Color.rgb(67,136,163)){toast("Item used")},-2);r.addView(c,LinearLayout.LayoutParams(0,-2,1f).apply{if(i>start)marginStart=dp(4);if(i<start+1)marginEnd=dp(4)})};put(p,r)}
+        val p=page("INVENTORY")
+        put(p,text("Items, food, toys, decorations & more!",14f,true,Color.rgb(255,222,139)))
+        val items=listOf(
+            "🍖 Dino Kibble" to food,
+            "🍎 Apple" to (food+2),
+            "⚽ Beach Ball" to toys,
+            "💎 Growth Crystal" to gems,
+            "🦴 Bone Treat" to max(1,food+4),
+            "🏆 Special Item" to max(1,gems)
+        )
+        var start=0
+        while(start<items.size){
+            val row=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+            val end=(start+2).coerceAtMost(items.size)
+            var i=start
+            while(i<end){
+                val item=items[i]
+                val c=card()
+                put(c,text(item.first,16f,true,Color.WHITE))
+                put(c,text("x"+item.second,13f,true,Color.rgb(157,235,94)))
+                put(c,button("USE",Color.rgb(67,136,163)){toast("Item used")},-2)
+                row.addView(c,LinearLayout.LayoutParams(0,-2,1f).apply{
+                    if(i>start)marginStart=dp(4)
+                    if(i<end-1)marginEnd=dp(4)
+                })
+                i++
+            }
+            put(p,row)
+            start=end
+        }
         content.addView(p)
     }
 
