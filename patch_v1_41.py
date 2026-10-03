@@ -51,6 +51,7 @@ private class JungleBackdropDrawable : android.graphics.drawable.Drawable() {
     private lateinit var game: DinoGameView
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val dinoHardware = DinoHardware(this) { event -> if(event == "SHAKE") { DinoLife.onInteraction(prefs, "play"); android.widget.Toast.makeText(this, "Dino got excited!", android.widget.Toast.LENGTH_SHORT).show(); pageTitle.text = "DINO EXCITED!" } }; dinoHardware.start()
         super.onCreate(savedInstanceState)
         window.statusBarColor = Color.rgb(42, 105, 150)
         window.navigationBarColor = Color.rgb(19, 58, 84)
@@ -1522,6 +1523,28 @@ life = r'''
 package com.example.dinocompanion
 
 import android.content.Context
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
+import kotlin.math.sqrt
+
+class DinoHardware(private val context: Context, private val onEvent: (String) -> Unit) : SensorEventListener {
+    private val sensors=context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private var lastShake=0L
+    fun start() {
+        sensors.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let { sensors.registerListener(this,it,SensorManager.SENSOR_DELAY_GAME) }
+    }
+    fun stop() { sensors.unregisterListener(this) }
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+    override fun onSensorChanged(event: SensorEvent) {
+        if(event.sensor.type!=Sensor.TYPE_ACCELEROMETER)return
+        val g=sqrt(event.values[0]*event.values[0]+event.values[1]*event.values[1]+event.values[2]*event.values[2])
+        val now=System.currentTimeMillis()
+        if(g>18f && now-lastShake>1200L){ lastShake=now; onEvent("SHAKE") }
+    }
+}
+
 import android.os.BatteryManager
 import java.util.Calendar
 import kotlin.math.max
