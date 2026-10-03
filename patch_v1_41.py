@@ -1097,13 +1097,23 @@ class MainActivity : Activity() {
     private fun dp(n:Int)=(n*resources.displayMetrics.density).toInt()
 
     inner class DinoView(c:Context):View(c){
-        private var frame=0;private val paint=Paint(Paint.ANTI_ALIAS_FLAG);private val h=Handler(Looper.getMainLooper())
-        private val r=object:Runnable{override fun run(){frame=(frame+1)%3;invalidate();h.postDelayed(this,180)}}
-        init{h.post(r)}
+        private val paint=Paint(Paint.ANTI_ALIAS_FLAG)
         override fun onDraw(c:Canvas){
-            val id=resources.getIdentifier(dino.id+"_stage"+stage+"_f"+(frame+1),"drawable",packageName).let{if(it==0)resources.getIdentifier(dino.id+"_stage"+stage,"drawable",packageName)else it}
-            if(id!=0){val b=BitmapFactory.decodeResource(resources,id);if(b!=null){val s=min(width.toFloat()/b.width,height.toFloat()/b.height)*.88f;val w=b.width*s;val hh=b.height*s;c.drawBitmap(b,null,RectF((width-w)/2,(height-hh)/2,(width+w)/2,(height+hh)/2),paint);b.recycle();return}}
-            paint.color=dino.accent;c.drawCircle(width/2f,height/2f,min(width,height)*.25f,paint)
+            val cx=width/2f
+            val cy=height/2f
+            val s=min(width,height).coerceAtLeast(1)/260f
+            paint.color=dino.accent
+            c.drawOval(cx-72f*s,cy-62f*s,cx+72f*s,cy+76f*s,paint)
+            c.drawCircle(cx-48f*s,cy-82f*s,24f*s,paint)
+            c.drawCircle(cx+48f*s,cy-82f*s,24f*s,paint)
+            paint.color=Color.WHITE
+            c.drawCircle(cx-25f*s,cy-12f*s,14f*s,paint)
+            c.drawCircle(cx+25f*s,cy-12f*s,14f*s,paint)
+            paint.color=Color.DKGRAY
+            c.drawCircle(cx-25f*s,cy-12f*s,6f*s,paint)
+            c.drawCircle(cx+25f*s,cy-12f*s,6f*s,paint)
+            paint.color=Color.argb(55,0,0,0)
+            c.drawOval(cx-78f*s,cy+68f*s,cx+78f*s,cy+88f*s,paint)
         }
     }
 }
