@@ -1241,12 +1241,23 @@ class MainActivity : Activity() {
     }
 
     private fun play(){
-        val p=page("PLAY");val c=card();put(c,dinoView(220));put(c,text("Mini games",18f,true,dino.accent))
-        put(c,button("DINO DASH  +15 XP",Color.rgb(93,164,92)){happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2;addXp(15);play()})
-        put(c,button("PLAY BALL  +20 XP",Color.rgb(126,100,181)){if(toys>0){toys--;happiness=min(100,happiness+18);energy=max(0,energy-8);bond=min(100,bond+8);coins+=4;addXp(20)}else toast("Buy a toy first.");play()})
-        put(c,text("Coins: "+coins+"   •   Bond: "+bond,13f,true));put(p,c);content.addView(p)
+        val p=page("PLAY")
+        val c=card()
+        put(c,text("Play with "+dinoName,18f,true,dino.accent))
+        put(c,text("Mini-games earn XP, coins and happiness.",12f,false,Color.rgb(75,105,115)))
+        put(c,dinoView(220))
+        put(c,text("MINI-GAMES",14f,true,dino.accent))
+        put(c,button("DINO DASH   +15 XP",Color.rgb(93,164,92)){
+            happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2;addXp(15);play()
+        })
+        put(c,button("PLAY BALL   +20 XP",Color.rgb(126,100,181)){
+            if(toys>0){toys--;happiness=min(100,happiness+18);energy=max(0,energy-8);bond=min(100,bond+8);coins+=4;addXp(20)}
+            else toast("Buy a toy first.")
+            play()
+        })
+        put(c,text("Coins: "+coins+"   •   XP: "+xp+"   •   Bond: "+bond+"%",12f,true,dino.accent))
+        content.addView(p)
     }
-
     private fun shop(){
         val p=page("SHOP");put(p,text("Coins: "+coins+"   •   Gems: "+gems,15f,true))
         buy(p,"FOOD PACK","3 meals • 10 coins"){if(coins>=10){coins-=10;food+=3;save();shop()}else toast("Not enough coins")}
