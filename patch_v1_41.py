@@ -1273,6 +1273,14 @@ class MainActivity : Activity() {
         put(p,daily)
         content.addView(p)
     }
+    private fun buy(p:LinearLayout,n:String,d:String,a:()->Unit){
+        val c=card()
+        put(c,text(n,16f,true,dino.accent))
+        put(c,text(d,12f,false,Color.rgb(75,105,115)))
+        put(c,button("BUY",Color.rgb(190,130,67)){a()})
+        put(p,c)
+    }
+
     private fun inventory(){
         val p=page("INVENTORY")
         put(p,card().apply{put(this,text("FOOD: "+food,16f,true));put(this,text("Meals ready to use"))})
