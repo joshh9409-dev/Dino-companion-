@@ -801,16 +801,29 @@ class DinoOverlayService : Service() {
             PixelFormat.TRANSLUCENT
         )
         params!!.gravity = Gravity.TOP or Gravity.END
-        params!!.x = (10 * d).toInt()
-        params!!.y = (145 * d).toInt()
+        val saved = getSharedPreferences("dino_companion", Context.MODE_PRIVATE)
+        val savedX = saved.getInt("overlay_x", (10 * d).toInt())
+        val savedY = saved.getInt("overlay_y", (145 * d).toInt())
+        val screenW = resources.displayMetrics.widthPixels
+        val screenH = resources.displayMetrics.heightPixels
+        val maxX = (screenW - params!!.width - 8).coerceAtLeast(8)
+        val maxY = (screenH - params!!.height - 8).coerceAtLeast(80)
+        params!!.x = savedX.coerceIn(8, maxX)
+        params!!.y = savedY.coerceIn(80, maxY)
 
         try { wm?.addView(view, params) } catch (_: Exception) {}
     }
 
     fun moveOverlay(dx: Float, dy: Float) {
         val p = params ?: return
-        p.x = (p.x - dx).coerceAtLeast(0f).toInt()
-        p.y = (p.y + dy).coerceIn(0f, resources.displayMetrics.heightPixels * .8f).toInt()
+        val screenW = resources.displayMetrics.widthPixels
+        val screenH = resources.displayMetrics.heightPixels
+        val maxX = (screenW - p.width - 8).coerceAtLeast(8)
+        val maxY = (screenH - p.height - 8).coerceAtLeast(80)
+        p.x = (p.x - dx).coerceIn(8f, maxX.toFloat()).toInt()
+        p.y = (p.y + dy).coerceIn(80f, maxY.toFloat()).toInt()
+        getSharedPreferences("dino_companion", Context.MODE_PRIVATE).edit()
+            .putInt("overlay_x", p.x).putInt("overlay_y", p.y).apply()
         try { view?.let { wm?.updateViewLayout(it, p) } } catch (_: Exception) {}
     }
 
