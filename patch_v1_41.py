@@ -808,9 +808,12 @@ class DinoOverlayService : Service() {
 
 class OverlayView(private val service: DinoOverlayService) : View(service) {
     private val prefs = service.getSharedPreferences("dino_companion", Context.MODE_PRIVATE)
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
     private var tick = 0
     private var menu = false
+    private var cachedSpecies = ""
+    private var cachedStage = 1
+    private val frames = ArrayList<Bitmap>()
     private var downX = 0f
     private var downY = 0f
     private var lastX = 0f
@@ -827,31 +830,59 @@ class OverlayView(private val service: DinoOverlayService) : View(service) {
         })
     }
 
+    private fun releaseFrames(){
+        frames.forEach{b->try{if(!b.isRecycled)b.recycle()}catch(_:Throwable){}}
+        frames.clear()
+    }
+
+    private fun loadFrames(species:String,stage:Int){
+        releaseFrames()
+        cachedSpecies=species
+        cachedStage=stage
+        for(f in 1..3){
+            val id=resources.getIdentifier(
+                species+"_stage"+stage+"_f"+f,"drawable",context.packageName
+            )
+            if(id!=0){
+                try{
+                    BitmapFactory.decodeResource(resources,id)?.let{
+                        it.prepareToDraw()
+                        frames.add(it)
+                    }
+                }catch(_:Throwable){}
+            }
+        }
+        if(frames.isEmpty()){
+            val id=resources.getIdentifier(
+                species+"_stage"+stage,"drawable",context.packageName
+            )
+            if(id!=0){
+                try{
+                    BitmapFactory.decodeResource(resources,id)?.let{
+                        it.prepareToDraw()
+                        frames.add(it)
+                    }
+                }catch(_:Throwable){}
+            }
+        }
+    }
+
     override fun onDraw(c: Canvas) {
         val density = resources.displayMetrics.density
         val w = width.toFloat()
         val h = height.toFloat()
         val species = prefs.getString("species", "trex") ?: "trex"
         val stage = prefs.getInt("stage", 1)
-        var id = resources.getIdentifier(
-            species + "_stage" + stage + "_f" + (tick % 3 + 1),
-            "drawable", context.packageName
-        )
-        if (id == 0) id = resources.getIdentifier(
-            species + "_stage" + stage, "drawable", context.packageName
-        )
+        if(species!=cachedSpecies || stage!=cachedStage || frames.isEmpty()) loadFrames(species,stage)
 
         paint.alpha = 255
         paint.color = Color.argb(75, 0, 0, 0)
         c.drawOval(w*.18f, h*.67f, w*.82f, h*.76f, paint)
 
-        if (id != 0) {
-            val b = BitmapFactory.decodeResource(resources, id)
-            if (b != null) {
-                val box = RectF(w*.08f, h*.04f, w*.92f, h*.72f)
-                c.drawBitmap(b, null, box, paint)
-                b.recycle()
-            }
+        val b=frames.getOrNull(if(frames.isEmpty())0 else tick%frames.size)
+        if(b!=null && !b.isRecycled){
+            val box = RectF(w*.08f, h*.04f, w*.92f, h*.72f)
+            c.drawBitmap(b, null, box, paint)
         }
 
         if (menu) {
@@ -865,6 +896,11 @@ class OverlayView(private val service: DinoOverlayService) : View(service) {
             c.drawText("HIDE", w*.50f, h*.89f, paint)
             c.drawText("INFO", w*.81f, h*.89f, paint)
         }
+    }
+
+    override fun onDetachedFromWindow(){
+        releaseFrames()
+        super.onDetachedFromWindow()
     }
 
     override fun onTouchEvent(e: MotionEvent): Boolean {
