@@ -1096,7 +1096,7 @@ class MainActivity : Activity() {
         }
         elevation=dp(3).toFloat()
         stateListAnimator=null
-        setOnClickListener{action()}
+        setOnClickListener{performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);action()}
         setOnLongClickListener{performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); true}
     }
     private fun card()=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(14),dp(12),dp(14),dp(12));background=bg()}
