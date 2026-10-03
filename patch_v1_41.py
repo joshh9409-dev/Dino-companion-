@@ -1354,12 +1354,19 @@ class MainActivity : Activity() {
     private inner class DinoView(c:Context, private val displayDino:Dino):View(c){
         private val paint=Paint(Paint.ANTI_ALIAS_FLAG or Paint.FILTER_BITMAP_FLAG)
         private var frame=0
+        private var idlePhase=0f
         private val frames=ArrayList<Bitmap>()
         private val handler=Handler(Looper.getMainLooper())
         private val animator=object:Runnable{
             override fun run(){
-                if(frames.size>1){frame=(frame+1)%frames.size;invalidate()}
-                handler.postDelayed(this,180)
+                if(frames.size>1){frame=(frame+1)%frames.size}
+                idlePhase += 0.16f
+                translationY=kotlin.math.sin(idlePhase.toDouble()).toFloat()*3f
+                rotation=kotlin.math.sin(idlePhase.toDouble()*0.55).toFloat()*1.2f
+                scaleX=1f+kotlin.math.sin(idlePhase.toDouble()*0.8).toFloat()*0.012f
+                scaleY=1f-kotlin.math.sin(idlePhase.toDouble()*0.8).toFloat()*0.008f
+                invalidate()
+                handler.postDelayed(this,90)
             }
         }
         init{
