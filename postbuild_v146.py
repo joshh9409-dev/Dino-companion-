@@ -39,9 +39,9 @@ main_path.write_text(s,encoding="utf-8")
 g = root / "app/build.gradle.kts"
 gs = g.read_text(encoding="utf-8")
 import re
-gs=re.sub(r'applicationId\\s*=\\s*"[^"]+"','applicationId = "com.example.dinocompanion.v146"',gs)
-gs=re.sub(r'versionCode\\s*=\\s*\\d+','versionCode = 49',gs)
-gs=re.sub(r'versionName\\s*=\\s*"[^"]+"','versionName = "1.46"',gs)
+gs=re.sub(r'applicationId\s*=\s*"[^"]+"','applicationId = "com.example.dinocompanion.v146"',gs)
+gs=re.sub(r'versionCode\s*=\s*\d+','versionCode = 49',gs)
+gs=re.sub(r'versionName\s*=\s*"[^"]+"','versionName = "1.46"',gs)
 g.write_text(gs,encoding="utf-8")
 (root/"BUILD_VERSION.txt").write_text("Dino Companion v1.46 UI and interaction rebuild\\n",encoding="utf-8")
 print("Dino Companion v1.46 UI rebuild generated")
