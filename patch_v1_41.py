@@ -1021,8 +1021,16 @@ class MainActivity : Activity() {
     }
 
     private fun page(title:String):LinearLayout{
-        pageTitle.text=title;content.removeAllViews()
-        return LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(12),dp(6),dp(12),dp(12))}
+        pageTitle.text=title
+        content.removeAllViews()
+        return LinearLayout(this).apply{
+            orientation=LinearLayout.VERTICAL
+            setPadding(dp(12),dp(8),dp(12),dp(16))
+            background=android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(Color.rgb(105,190,222),Color.rgb(224,247,252))
+            )
+        }
     }
     private fun put(p:LinearLayout,v:View,h:Int=-2,weight:Float=0f){
         p.addView(v,LinearLayout.LayoutParams(if(weight>0)0 else -1,h).apply{this.weight=weight;bottomMargin=dp(8)})
