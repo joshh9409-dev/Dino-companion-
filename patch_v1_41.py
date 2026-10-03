@@ -50,8 +50,11 @@ private class JungleBackdropDrawable : android.graphics.drawable.Drawable() {
 }\n\nclass MainActivity : Activity() {
     private lateinit var game: DinoGameView
 
+    private var dinoHardware: DinoHardware? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        val dinoHardware = DinoHardware(this) { event -> if(event == "SHAKE") { DinoLife.onInteraction(prefs, "play"); android.widget.Toast.makeText(this, "Dino got excited!", android.widget.Toast.LENGTH_SHORT).show() } }; dinoHardware.start()
+        dinoHardware = DinoHardware(this) { event -> if(event == "SHAKE") { DinoLife.onInteraction(prefs, "play"); android.widget.Toast.makeText(this, "Dino got excited!", android.widget.Toast.LENGTH_SHORT).show() } }
+        dinoHardware?.start()
         super.onCreate(savedInstanceState)
         window.statusBarColor = Color.rgb(42, 105, 150)
         window.navigationBarColor = Color.rgb(19, 58, 84)
