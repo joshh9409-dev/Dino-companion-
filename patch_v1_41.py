@@ -1292,13 +1292,21 @@ class MainActivity : Activity() {
 
     private fun settings(){
         val p=page("SETTINGS")
-        put(p,card().apply{put(this,text("Dinosaur name",15f,true));put(this,text(dinoName))})
+        put(p,text("Dino Companion Settings",20f,true,dino.accent))
+        val nameCard=card()
+        put(nameCard,text("Dinosaur name",14f,true,dino.accent))
+        put(nameCard,text(dinoName,18f,true,Color.rgb(55,85,96)))
+        put(p,nameCard)
         put(p,button("RENAME DINOSAUR",Color.rgb(65,128,172)){rename()})
-        put(p,button(if(overlayOn)"OVERLAY: ON" else "OVERLAY: OFF",Color.rgb(73,158,181)){overlaySettings()})
+        val overlayCard=card()
+        put(overlayCard,text("FLOATING OVERLAY",14f,true,dino.accent))
+        put(overlayCard,text(if(overlayOn)"Your Dino can appear over other apps." else "Overlay is currently off.",12f,false,Color.rgb(75,105,115)))
+        put(overlayCard,button(if(overlayOn)"OVERLAY: ON" else "OVERLAY: OFF",Color.rgb(73,158,181)){overlaySettings()})
+        put(p,overlayCard)
         put(p,button("RESET DINO",Color.rgb(170,79,78)){reset();home()})
-        put(p,text("Dino Companion 1.45",12f,false,Color.GRAY));content.addView(p)
+        put(p,text("Dino Companion 1.45",12f,false,Color.GRAY))
+        content.addView(p)
     }
-
     private fun rename(){
         val e=EditText(this);e.setText(dinoName);e.selectAll()
         AlertDialog.Builder(this).setTitle("Rename your dinosaur").setView(e).setNegativeButton("Cancel",null)
