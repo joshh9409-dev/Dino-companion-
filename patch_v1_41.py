@@ -1154,12 +1154,25 @@ class MainActivity : Activity() {
     private fun dinoView(h:Int,which:Dino=dino)=DinoView(this,which).apply{layoutParams=LinearLayout.LayoutParams(-1,dp(h))}
 
     private fun home(){
-        val p=page("DINO COMPANION");val c=card()
-        put(c,text(dinoName+"  •  "+dino.name+"  •  Stage "+stage,18f,true,dino.accent))
+        val p=page("DINO COMPANION")
+        val hero=card()
+        put(hero,text(dinoName,22f,true,dino.accent))
+        put(hero,text(dino.name+"  •  Stage "+stage,13f,true,Color.rgb(70,100,112)))
+        put(hero,dinoView(255))
+        val evolutionText=if(stage<4)"Evolution to Stage "+(stage+1)+"  •  "+xp+" / "+(stage*100)+" XP" else "MAX EVOLUTION"
+        put(hero,text(evolutionText,13f,true,dino.accent))
+        if(stage<4){
+            put(hero,ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal).apply{
+                max=stage*100
+                progress=xp.coerceIn(0,stage*100)
+                progressTintList=android.content.res.ColorStateList.valueOf(dino.accent)
+            },-1)
+        }
+        put(p,hero)
+        val c=card()
+        put(c,text("DINO STATUS",15f,true,dino.accent))
         put(c,stat("Hunger",hunger));put(c,stat("Happiness",happiness));put(c,stat("Energy",energy))
         put(c,stat("Cleanliness",cleanliness));put(c,stat("Bond",bond));put(p,c)
-        val d=card();put(d,text("YOUR DINO",15f,true,dino.accent));put(d,dinoView(235))
-        put(d,text(if(stage<4)"Evolution: "+xp+" / "+(stage*100)+" XP" else "MAX EVOLUTION",13f,true,dino.accent));put(p,d)
         put(p,text("YOUR DINOSAURS",16f,true,dino.accent))
         put(p,text("Tap any dinosaur to make it your active companion",12f,false,Color.WHITE))
         val grid=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL}
