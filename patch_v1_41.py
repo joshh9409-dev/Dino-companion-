@@ -287,7 +287,7 @@ class DinoGameView(private val ctx: Context) : View(ctx) {
         round(c,175f,548f,175f+(width-217f)*progress,562f,7f,dino.color)
         text(c,xp.toString()+" / "+need+" XP",width-48f,537f,10f,Color.GRAY,false)
         val y=height-103f
-        button(c,18f,y,width/2f-9,y+64,"FOOD & CARE","♡",Color.rgb(80,160,115))
+        button(c,18f,y,width/2f-9,y+64,"FEED","●",Color.rgb(80,160,115))
         button(c,width/2f+9,y,width-18f,y+64,"PLAY","★",Color.rgb(126,100,181))
         button(c,18f,y-73,width/2f-9,y-9,"CHOOSE DINO","◆",Color.rgb(65,128,172))
         button(c,width/2f+9,y-73,width-18f,y-9,"SHOP","◇",Color.rgb(190,130,67))
