@@ -1438,6 +1438,43 @@ class MainActivity : Activity() {
     }
 }
 '''
+# Ensure the final XML-generated Activity keeps its jungle backdrop class.
+jungle = r'''
+private class JungleBackdropDrawable : android.graphics.drawable.Drawable() {
+    private val p=Paint(Paint.ANTI_ALIAS_FLAG)
+    override fun draw(c:Canvas){
+        val w=bounds.width().toFloat()
+        val h=bounds.height().toFloat()
+        p.shader=LinearGradient(0f,0f,0f,h,Color.rgb(37,139,178),Color.rgb(18,78,57),Shader.TileMode.CLAMP)
+        c.drawRect(0f,0f,w,h,p)
+        p.shader=null
+        p.color=Color.rgb(35,96,67)
+        val path=Path()
+        path.moveTo(0f,h*.35f);path.lineTo(w*.18f,h*.20f);path.lineTo(w*.34f,h*.30f)
+        path.lineTo(w*.52f,h*.17f);path.lineTo(w*.72f,h*.28f);path.lineTo(w*.90f,h*.16f)
+        path.lineTo(w,h*.30f);path.lineTo(w,h*.55f);path.lineTo(0f,h*.55f);path.close()
+        c.drawPath(path,p)
+        p.color=Color.rgb(77,163,93)
+        c.drawRect(w*.47f,h*.18f,w*.54f,h*.70f,p)
+        p.color=Color.argb(110,215,248,255)
+        c.drawRect(w*.485f,h*.18f,w*.53f,h*.70f,p)
+        for(i in 0..8){
+            val x=i*w/8f
+            p.color=if(i%2==0)Color.rgb(24,82,55) else Color.rgb(37,111,67)
+            c.drawCircle(x,h*.56f,w/28f,p)
+            c.drawRect(x-w/28f,h*.56f,x+w/28f,h,p)
+        }
+        p.color=Color.rgb(31,76,48);c.drawRect(0f,h*.84f,w,h,p)
+        p.color=Color.argb(65,255,255,255)
+        for(i in 0..5)c.drawCircle(i*w/5f,h*.10f+(i%2)*h*.07f,w/70f,p)
+    }
+    override fun setAlpha(a:Int){p.alpha=a}
+    override fun setColorFilter(f:android.graphics.ColorFilter?){p.colorFilter=f}
+    override fun getOpacity():Int=android.graphics.PixelFormat.TRANSLUCENT
+}
+'''
+final_main = final_main.replace("class MainActivity : Activity() {", jungle + "\nclass MainActivity : Activity() {", 1)
+
 layout_dir = root / "app/src/main/res/layout"
 layout_dir.mkdir(parents=True, exist_ok=True)
 (layout_dir / "activity_main.xml").write_text(r'''<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
