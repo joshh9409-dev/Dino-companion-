@@ -1091,7 +1091,7 @@ class MainActivity : Activity() {
     private fun clean(){cleanliness=min(100,cleanliness+28);happiness=min(100,happiness+5);addXp(6)}
     private fun rest(){energy=min(100,energy+30);hunger=max(0,hunger-3);addXp(4)}
     private fun pet(){happiness=min(100,happiness+12);bond=min(100,bond+5);addXp(5)}
-    private fun addXp(n:Int){xp+=n;while(stage<4&&xp>=stage*100){xp-=stage*100;stage++;coins+=25;happiness=min(100,happiness+10);bond=min(100,bond+5);toast("Dino evolved to Stage "+stage+"!")}save()}
+    private fun addXp(n:Int){xp+=n;while(stage<4&&xp>=stage*100){xp-=stage*100;stage++;coins+=25;happiness=min(100,happiness+10);bond=min(100,bond+5);toast("Dino evolved to Stage "+stage+"!")} ; save()}
     private fun reset(){selectedId="trex";dinoName="Rex";stage=1;xp=32;hunger=78;happiness=100;energy=79;cleanliness=90;bond=12;coins=52;food=3;toys=1;gems=0;overlayOn=false;save();stopDinoOverlay()}
     private fun save(){prefs.edit().putString("species",selectedId).putString("name",dinoName).putInt("stage",stage).putInt("xp",xp).putInt("hunger",hunger).putInt("happiness",happiness).putInt("energy",energy).putInt("cleanliness",cleanliness).putInt("bond",bond).putInt("coins",coins).putInt("food",food).putInt("toys",toys).putInt("gems",gems).putBoolean("overlay",overlayOn).apply()}
     private fun toast(s:String)=Toast.makeText(this,s,Toast.LENGTH_SHORT).show()
