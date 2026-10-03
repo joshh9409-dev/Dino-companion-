@@ -1574,7 +1574,6 @@ if manifest_path.exists():
     manifest = manifest_path.read_text(encoding="utf-8")
     if "FOREGROUND_SERVICE_SPECIAL_USE" not in manifest:
         manifest = manifest.replace("</manifest>", '    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE"/>\\n</manifest>')
-    manifest = manifest.replace('android:name=".DinoOverlayService" android:exported="false"', 'android:name=".DinoOverlayService" android:exported="false" android:foregroundServiceType="specialUse"')
     if 'PROPERTY_SPECIAL_USE_FGS_SUBTYPE' not in manifest and 'android:name=".DinoOverlayService"' in manifest:
         manifest = manifest.replace("</service>", '        <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="user-enabled floating virtual companion overlay"/>\\n        </service>', 1)
     manifest_path.write_text(manifest,encoding="utf-8")
