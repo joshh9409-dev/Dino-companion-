@@ -973,9 +973,8 @@ class MainActivity : Activity() {
 
     override fun onResume(){
         super.onResume()
-        if(overlayOn && Settings.canDrawOverlays(this)){
-            startDinoOverlay()
-        }
+        // Overlay is never started automatically during app launch/resume.
+        // It is started only from the explicit Overlay setting.
     }
 
     private fun page(title:String):LinearLayout{
