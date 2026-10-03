@@ -1093,7 +1093,7 @@ class MainActivity : Activity() {
         content.removeAllViews()
         return LinearLayout(this).apply{
             orientation=LinearLayout.VERTICAL
-            setPadding(dp(12),dp(8),dp(12),dp(16))
+            setPadding(dp(10),dp(6),dp(10),dp(12))
             background=android.graphics.drawable.GradientDrawable(
                 android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
                 intArrayOf(Color.rgb(105,190,222),Color.rgb(224,247,252))
@@ -1163,7 +1163,7 @@ class MainActivity : Activity() {
         val hero=card()
         put(hero,text(dinoName,22f,true,dino.accent))
         put(hero,text(dino.name+"  •  Stage "+stage,13f,true,Color.rgb(70,100,112)))
-        put(hero,dinoView(255))
+        put(hero,dinoView(230))
         val evolutionText=if(stage<4)"Evolution to Stage "+(stage+1)+"  •  "+xp+" / "+(stage*100)+" XP" else "MAX EVOLUTION"
         put(hero,text(evolutionText,13f,true,dino.accent))
         if(stage<4){
