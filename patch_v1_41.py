@@ -30,7 +30,24 @@ import android.widget.Toast
 import kotlin.math.max
 import kotlin.math.min
 
-class MainActivity : Activity() {
+private class JungleBackdropDrawable : android.graphics.drawable.Drawable() {
+    private val p=Paint(Paint.ANTI_ALIAS_FLAG)
+    override fun draw(c:Canvas){
+        val w=bounds.width().toFloat();val h=bounds.height().toFloat()
+        p.shader=LinearGradient(0f,0f,0f,h,Color.rgb(44,139,181),Color.rgb(20,76,58),Shader.TileMode.CLAMP);c.drawRect(0f,0f,w,h,p);p.shader=null
+        p.color=Color.rgb(48,108,91)
+        val path=Path();path.moveTo(0f,h*.28f);path.lineTo(w*.18f,h*.18f);path.lineTo(w*.35f,h*.27f);path.lineTo(w*.53f,h*.16f);path.lineTo(w*.72f,h*.25f);path.lineTo(w*.9f,h*.14f);path.lineTo(w,h*.25f);path.lineTo(w,h*.5f);path.lineTo(0f,h*.5f);path.close();c.drawPath(path,p)
+        p.color=Color.rgb(91,171,106);c.drawRect(w*.47f,h*.2f,w*.54f,h*.7f,p)
+        p.color=Color.argb(110,210,247,255);c.drawRect(w*.48f,h*.2f,w*.53f,h*.7f,p)
+        for(i in 0..8){val x=(i*w/8f);p.color=if(i%2==0)Color.rgb(29,89,61)else Color.rgb(38,112,70);c.drawCircle(x,h*.55f,dpScale(w)*.16f,p);c.drawRect(x-dpScale(w)*.16f,h*.55f,x+dpScale(w)*.16f,h,p)}
+        p.color=Color.rgb(36,84,51);c.drawRect(0f,h*.83f,w,h,p)
+        p.color=Color.argb(80,255,255,255);for(i in 0..5){val x=i*w/5f;val y=h*.08f+(i%2)*h*.08f;c.drawCircle(x,y,dpScale(w)*.05f,p)}
+    }
+    private fun dpScale(w:Float)=max(12f,w/34f)
+    override fun setAlpha(a:Int){p.alpha=a}
+    override fun setColorFilter(f:android.graphics.ColorFilter?){p.colorFilter=f}
+    override fun getOpacity():Int=android.graphics.PixelFormat.TRANSLUCENT
+}\n\nclass MainActivity : Activity() {
     private lateinit var game: DinoGameView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -1017,6 +1034,11 @@ class MainActivity : Activity() {
             setContentView(R.layout.activity_main)
             content=findViewById(R.id.content)
             pageTitle=findViewById(R.id.pageTitle)
+            findViewById<View>(R.id.root).background = JungleBackdropDrawable()
+            pageTitle.background = android.graphics.drawable.GradientDrawable(
+                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+                intArrayOf(Color.rgb(105,72,43),Color.rgb(61,43,31))
+            ).apply{cornerRadius=dp(18).toFloat();setStroke(dp(2),Color.rgb(157,125,76))}
             val navs=listOf(
                 findViewById<Button>(R.id.navHome),
                 findViewById<Button>(R.id.navCare),
@@ -1025,7 +1047,27 @@ class MainActivity : Activity() {
                 findViewById<Button>(R.id.navMore)
             )
             navs.forEach{b->
-                b.setTextColor(Color.rgb(45,86,103))
+                b.setTextColor(Color.WHITE)
+                b.typeface=Typeface.DEFAULT_BOLD
+                b.gravity=Gravity.CENTER
+                b.setAllCaps(false)
+                b.setTextColor(Color.WHITE)
+                b.setPadding(dp(2),dp(2),dp(2),dp(2))
+                b.setTextSize(10f)
+                b.background=android.graphics.drawable.GradientDrawable().apply{
+                    setColor(Color.rgb(49,70,73));cornerRadius=dp(12).toFloat();setStroke(dp(1),Color.rgb(93,116,101))
+                }
+                b.stateListAnimator=null
+                b.elevation=dp(2).toFloat()
+            }
+            fun styleActiveNav(b:Button){
+                b.background=android.graphics.drawable.GradientDrawable().apply{
+                    setColor(Color.rgb(73,145,55));cornerRadius=dp(12).toFloat();setStroke(dp(2),Color.rgb(175,239,88))
+                }
+                b.setTextColor(Color.WHITE);b.elevation=dp(5).toFloat()
+            }
+            navs.forEach{b->
+                b.setTextColor(Color.WHITE)
                 b.textSize=11f
                 b.minHeight=dp(48);b.minimumHeight=dp(48)
                 b.setPadding(dp(3),dp(3),dp(3),dp(3))
@@ -1038,14 +1080,12 @@ class MainActivity : Activity() {
             }
             fun selectNav(index:Int){
                 navs.forEachIndexed{i,b->
-                    val active=i==index
-                    b.setTextColor(if(active)Color.WHITE else Color.rgb(45,86,103))
                     b.background=android.graphics.drawable.GradientDrawable().apply{
-                        setColor(if(active)Color.rgb(58,139,160) else 0xFFF1FAFD.toInt())
-                        cornerRadius=dp(14).toFloat()
-                        setStroke(dp(1),if(active)0x80FFFFFF.toInt() else 0x30609BB0)
+                        setColor(if(i==index)Color.rgb(73,145,55) else Color.rgb(49,70,73))
+                        cornerRadius=dp(12).toFloat()
+                        setStroke(dp(if(i==index)2 else 1),if(i==index)Color.rgb(175,239,88) else Color.rgb(93,116,101))
                     }
-                    b.elevation=if(active)dp(3).toFloat() else 0f
+                    b.setTextColor(Color.WHITE);b.elevation=if(i==index)dp(5).toFloat() else dp(2).toFloat()
                 }
             }
             navs[0].setOnClickListener{selectNav(0);home()}
@@ -1089,228 +1129,179 @@ class MainActivity : Activity() {
     }
 
     private fun page(title:String):LinearLayout{
-        pageTitle.text=title
-        content.removeAllViews()
+        pageTitle.text=title+"\n🪙 "+coins+"    💎 "+gems
+        pageTitle.textSize=19f
+        pageTitle.setTextColor(Color.WHITE)
+        pageTitle.gravity=Gravity.CENTER
+        pageTitle.setTypeface(null,Typeface.BOLD)
+        pageTitle.setShadowLayer(dp(3).toFloat(),0f,dp(2).toFloat(),Color.BLACK)
+        pageTitle.background=android.graphics.drawable.GradientDrawable(
+            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.rgb(105,72,43),Color.rgb(61,43,31))
+        ).apply{cornerRadius=dp(18).toFloat();setStroke(dp(2),Color.rgb(157,125,76))}
         return LinearLayout(this).apply{
             orientation=LinearLayout.VERTICAL
-            setPadding(dp(10),dp(6),dp(10),dp(12))
-            background=android.graphics.drawable.GradientDrawable(
-                android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
-                intArrayOf(Color.rgb(105,190,222),Color.rgb(224,247,252))
-            )
+            setPadding(dp(8),dp(8),dp(8),dp(14))
+            setBackgroundColor(Color.TRANSPARENT)
         }
     }
     private fun put(p:LinearLayout,v:View,h:Int=-2,weight:Float=0f){
         p.addView(v,LinearLayout.LayoutParams(if(weight>0)0 else -1,h).apply{
             this.weight=weight
-            bottomMargin=dp(if(weight>0)5 else 8)
-            if(weight>0) marginStart=dp(3)
-            if(weight>0) marginEnd=dp(3)
+            bottomMargin=dp(if(weight>0)5 else 10)
+            if(weight>0){marginStart=dp(4);marginEnd=dp(4)}
         })
     }
-    private fun text(t:String,size:Float=14f,bold:Boolean=false,color:Int=Color.DKGRAY)=TextView(this).apply{text=t;textSize=size;setTextColor(color);setTypeface(null,if(bold)Typeface.BOLD else Typeface.NORMAL)}
-    private fun button(t:String,color:Int=Color.rgb(67,139,155),action:()->Unit)=Button(this).apply{
-        val normal=android.graphics.drawable.GradientDrawable().apply{
-            setColor(color);cornerRadius=dp(16).toFloat()
-            setStroke(dp(1),Color.argb(70,255,255,255))
-        }
-        val pressed=android.graphics.drawable.GradientDrawable().apply{
-            setColor(android.graphics.Color.rgb(
-                (android.graphics.Color.red(color)*0.82f).toInt(),
-                (android.graphics.Color.green(color)*0.82f).toInt(),
-                (android.graphics.Color.blue(color)*0.82f).toInt()
-            ))
-            cornerRadius=dp(16).toFloat()
-            setStroke(dp(1),Color.argb(120,255,255,255))
-        }
-        text=t;textSize=13f;setTextColor(Color.WHITE);isAllCaps=false
-        gravity=Gravity.CENTER
-        minHeight=dp(50);minimumHeight=dp(50)
-        setPadding(dp(10),dp(4),dp(10),dp(4))
-        background=android.graphics.drawable.StateListDrawable().apply{
-            addState(intArrayOf(android.R.attr.state_pressed),pressed)
-            addState(intArrayOf(),normal)
-        }
-        elevation=dp(3).toFloat()
-        stateListAnimator=null
-        setOnClickListener{performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);action()}
-        setOnLongClickListener{performHapticFeedback(android.view.HapticFeedbackConstants.LONG_PRESS); true}
+    private fun text(t:String,size:Float=14f,bold:Boolean=false,color:Int=Color.WHITE)=TextView(this).apply{
+        text=t;textSize=size;setTextColor(color);gravity=Gravity.CENTER_VERTICAL
+        setTypeface(null,if(bold)Typeface.BOLD else Typeface.NORMAL)
+        setShadowLayer(if(bold)dp(2).toFloat() else 0f,0f,dp(1).toFloat(),Color.BLACK)
+        setPadding(dp(4),dp(2),dp(4),dp(2))
     }
-    private fun card()=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL;setPadding(dp(14),dp(12),dp(14),dp(12));background=bg()}
-    private fun bg()=android.graphics.drawable.GradientDrawable().apply{setColor(0xFFF8FDFF.toInt());cornerRadius=dp(18).toFloat()}
+    private fun button(t:String,color:Int=Color.rgb(73,145,66),action:()->Unit)=Button(this).apply{
+        val normal=android.graphics.drawable.GradientDrawable(
+            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.argb(255,96,177,67),color)
+        ).apply{cornerRadius=dp(18).toFloat();setStroke(dp(2),Color.rgb(45,78,39))}
+        val pressed=android.graphics.drawable.GradientDrawable(
+            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.rgb(75,120,55),Color.rgb(45,82,39))
+        ).apply{cornerRadius=dp(18).toFloat();setStroke(dp(2),Color.rgb(205,233,124))}
+        text=t;textSize=12f;setTextColor(Color.WHITE);isAllCaps=false;gravity=Gravity.CENTER
+        minHeight=dp(54);minimumHeight=dp(54);setPadding(dp(8),dp(4),dp(8),dp(4))
+        background=android.graphics.drawable.StateListDrawable().apply{
+            addState(intArrayOf(android.R.attr.state_pressed),pressed);addState(intArrayOf(),normal)
+        }
+        elevation=dp(5).toFloat();stateListAnimator=null
+        setOnClickListener{performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY);action()}
+    }
+    private fun card()=LinearLayout(this).apply{
+        orientation=LinearLayout.VERTICAL
+        setPadding(dp(12),dp(10),dp(12),dp(10))
+        background=android.graphics.drawable.GradientDrawable(
+            android.graphics.drawable.GradientDrawable.Orientation.TOP_BOTTOM,
+            intArrayOf(Color.argb(235,38,58,62),Color.argb(230,18,31,37))
+        ).apply{cornerRadius=dp(20).toFloat();setStroke(dp(2),Color.rgb(109,132,118))}
+        elevation=dp(6).toFloat()
+    }
+    private fun bg()=android.graphics.drawable.GradientDrawable().apply{
+        setColor(Color.argb(225,37,53,56));cornerRadius=dp(18).toFloat();setStroke(dp(2),Color.rgb(103,125,111))
+    }
     private fun stat(name:String,value:Int)=LinearLayout(this).apply{
         orientation=LinearLayout.VERTICAL
-        addView(text(name+"  "+value+"%",11f,true))
+        val head=LinearLayout(this@MainActivity).apply{orientation=LinearLayout.HORIZONTAL}
+        head.addView(text(name,12f,true,Color.WHITE),LinearLayout.LayoutParams(0,-2,1f))
+        head.addView(text(value.coerceIn(0,100).toString()+" / 100",11f,true,Color.rgb(221,239,222)))
+        addView(head)
         addView(ProgressBar(this@MainActivity,null,android.R.attr.progressBarStyleHorizontal).apply{
-            max=100
-            progress=value
-            progressTintList=android.content.res.ColorStateList.valueOf(
-                when(name){
-                    "Hunger" -> Color.rgb(242,165,62)
-                    "Happiness" -> Color.rgb(88,190,119)
-                    "Energy" -> Color.rgb(88,151,224)
-                    "Cleanliness" -> Color.rgb(85,189,202)
-                    "Bond" -> Color.rgb(174,101,190)
-                    else -> Color.rgb(73,158,181)
-                }
-            )
-        },LinearLayout.LayoutParams(-1,dp(8)))
+            max=100;progress=value.coerceIn(0,100)
+            progressTintList=android.content.res.ColorStateList.valueOf(when(name){
+                "Hunger"->Color.rgb(247,181,55);"Happiness"->Color.rgb(92,221,65);"Energy"->Color.rgb(71,167,244)
+                "Cleanliness"->Color.rgb(51,201,224);"Health"->Color.rgb(255,92,110);"Bond"->Color.rgb(174,86,245)
+                else->Color.rgb(108,205,75)
+            })
+            progressBackgroundTintList=android.content.res.ColorStateList.valueOf(Color.rgb(24,34,38))
+        },LinearLayout.LayoutParams(-1,dp(9)))
     }
-    private fun dinoView(h:Int,which:Dino=dino)=DinoView(this,which).apply{layoutParams=LinearLayout.LayoutParams(-1,dp(h))}
+    private fun dinoView(h:Int,which:Dino=dino)=DinoView(this,which).apply{
+        layoutParams=LinearLayout.LayoutParams(-1,dp(h))
+        setBackgroundColor(Color.TRANSPARENT)
+    }
 
     private fun home(){
         val p=page("DINO COMPANION")
         val hero=card()
-        put(hero,text(dinoName,22f,true,dino.accent))
-        put(hero,text(dino.name+"  •  Stage "+stage,13f,true,Color.rgb(70,100,112)))
-        put(hero,dinoView(230))
-        val evolutionText=if(stage<4)"Evolution to Stage "+(stage+1)+"  •  "+xp+" / "+(stage*100)+" XP" else "MAX EVOLUTION"
-        put(hero,text(evolutionText,13f,true,dino.accent))
-        if(stage<4){
-            put(hero,ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal).apply{
-                max=stage*100
-                progress=xp.coerceIn(0,stage*100)
-                progressTintList=android.content.res.ColorStateList.valueOf(dino.accent)
-            },-1)
-        }
+        put(hero,text(dinoName,24f,true,Color.rgb(255,219,103)))
+        put(hero,text(dino.name+"  •  Stage "+stage,13f,true,Color.rgb(222,236,224)))
+        put(hero,dinoView(270))
+        put(hero,text("A happy dino makes a brighter day! ♥",13f,true,Color.rgb(255,225,142)))
         put(p,hero)
-        val c=card()
-        put(c,text("DINO STATUS",15f,true,dino.accent))
-        put(c,stat("Hunger",hunger));put(c,stat("Happiness",happiness));put(c,stat("Energy",energy))
-        put(c,stat("Cleanliness",cleanliness));put(c,stat("Bond",bond));put(p,c)
-        put(p,text("YOUR DINOSAURS",16f,true,dino.accent))
-        put(p,text("Tap any dinosaur to make it your active companion",12f,false,Color.WHITE))
+        val stats=card();put(stats,text("DINO STATUS",16f,true,Color.rgb(157,235,94)))
+        val health=((happiness+cleanliness)/2).coerceIn(0,100)
+        put(stats,stat("Happiness",happiness));put(stats,stat("Hunger",hunger));put(stats,stat("Energy",energy))
+        put(stats,stat("Cleanliness",cleanliness));put(stats,stat("Health",health));put(stats,stat("Bond",bond));put(p,stats)
+        val evo=card();put(evo,text("EVOLUTION PROGRESS",15f,true,Color.rgb(255,221,101)))
+        val need=stage*100;val progress=xp.coerceIn(0,need)
+        put(evo,ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal).apply{
+            max=need;this.progress=progress;progressTintList=android.content.res.ColorStateList.valueOf(Color.rgb(102,231,58))
+            progressBackgroundTintList=android.content.res.ColorStateList.valueOf(Color.rgb(24,31,32))
+        },dp(12))
+        put(evo,text(if(stage<4)"Next: Stage "+(stage+1)+"   "+xp+" / "+need+" XP" else "MAX EVOLUTION",12f,true,Color.WHITE));put(p,evo)
+        put(p,text("YOUR DINOSAURS",16f,true,Color.rgb(157,235,94)))
         val grid=LinearLayout(this).apply{orientation=LinearLayout.VERTICAL}
         for(start in dinos.indices step 2){
             val row=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
             for(i in start until min(start+2,dinos.size)){
-                val choice=dinos[i]
-                val mini=card()
+                val choice=dinos[i];val mini=card()
                 mini.background=android.graphics.drawable.GradientDrawable().apply{
-                    setColor(0xFFF8FDFF.toInt())
-                    cornerRadius=dp(20).toFloat()
-                    setStroke(dp(if(choice.id==selectedId)3 else 1),if(choice.id==selectedId)dino.accent else Color.argb(90,80,150,170))
+                    setColor(Color.argb(215,28,43,48));cornerRadius=dp(18).toFloat()
+                    setStroke(dp(if(choice.id==selectedId)3 else 1),if(choice.id==selectedId)Color.rgb(120,238,70) else Color.rgb(88,112,99))
                 }
-                put(mini,dinoView(112,choice))
-                put(mini,text((if(choice.id==selectedId)"✓ " else "")+choice.name,14f,true,choice.accent))
-                put(mini,text(if(choice.id==selectedId)"ACTIVE" else "4 evolution stages",10f,true,if(choice.id==selectedId)dino.accent else Color.GRAY))
+                put(mini,dinoView(110,choice));put(mini,text((if(choice.id==selectedId)"✓ " else "")+choice.name,13f,true,Color.WHITE))
                 mini.setOnClickListener{selectedId=choice.id;save();home()}
-                row.addView(mini,LinearLayout.LayoutParams(0,-2,1f).apply{
-                    if(i>start) leftMargin=dp(5)
-                    if(i<start+1) rightMargin=dp(5)
-                })
+                row.addView(mini,LinearLayout.LayoutParams(0,-2,1f).apply{if(i>start)marginStart=dp(4);if(i<start+1)marginEnd=dp(4)})
             }
             put(grid,row)
         }
         put(p,grid)
-        val r=LinearLayout(this);r.orientation=LinearLayout.HORIZONTAL
-        put(r,button("FOOD & CARE",Color.rgb(80,160,115)){care()},-2,1f);put(r,button("PLAY",Color.rgb(126,100,181)){play()},-2,1f);put(p,r)
-        val r2=LinearLayout(this);r2.orientation=LinearLayout.HORIZONTAL
-        put(r2,button("CHOOSE DINO",Color.rgb(65,128,172)){choose()},-2,1f);put(r2,button("SHOP",Color.rgb(190,130,67)){shop()},-2,1f);put(p,r2)
-        val r3=LinearLayout(this);r3.orientation=LinearLayout.HORIZONTAL
-        put(r3,button("INVENTORY",Color.rgb(73,158,181)){inventory()},-2,1f);put(r3,button("SETTINGS",Color.rgb(67,112,145)){settings()},-2,1f);put(p,r3)
+        val r=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+        put(r,button("🍎  FOOD & CARE",Color.rgb(65,146,72)){care()},-2,1f);put(r,button("🎮  PLAY",Color.rgb(100,82,170)){play()},-2,1f);put(p,r)
+        val r2=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
+        put(r2,button("🧬  EVOLVE",Color.rgb(91,128,56)){toast("Evolution requirements shown above")},-2,1f);put(r2,button("🛒  SHOP",Color.rgb(161,108,49)){shop()},-2,1f);put(p,r2)
         content.addView(p)
     }
 
     private fun care(){
-        val p=page("FOOD & CARE")
-        val c=card()
-        put(c,text("Keep "+dinoName+" healthy and happy",18f,true,dino.accent))
-        put(c,text("Care for your companion and build your bond.",12f,false,Color.rgb(75,105,115)))
-        put(c,dinoView(210))
-        put(c,text("NEEDS",14f,true,dino.accent))
-        put(c,stat("Hunger",hunger));put(c,stat("Happiness",happiness))
-        put(c,stat("Energy",energy));put(c,stat("Cleanliness",cleanliness))
+        val p=page("FOOD & CARE");val c=card()
+        put(c,text("Keep "+dinoName+" happy, healthy and strong!",18f,true,Color.rgb(255,219,103)))
+        put(c,dinoView(230));put(c,text("NEEDS",15f,true,Color.rgb(157,235,94)))
+        put(c,stat("Hunger",hunger));put(c,stat("Happiness",happiness));put(c,stat("Energy",energy));put(c,stat("Cleanliness",cleanliness))
+        val health=((happiness+cleanliness)/2).coerceIn(0,100);put(c,stat("Health",health))
         val r=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
-        put(r,button("FEED  •  "+food,Color.rgb(93,164,92)){feed();care()},-2,1f)
-        put(r,button("CLEAN",Color.rgb(73,158,181)){clean();care()},-2,1f);put(c,r)
+        put(r,button("🍎 FEED  •  "+food,Color.rgb(74,155,67)){feed();care()},-2,1f);put(r,button("🚿 CLEAN",Color.rgb(46,134,168)){clean();care()},-2,1f);put(c,r)
         val r2=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL}
-        put(r2,button("REST",Color.rgb(76,122,181)){rest();care()},-2,1f)
-        put(r2,button("PET  ♥",Color.rgb(175,91,135)){pet();care()},-2,1f);put(c,r2)
-        put(c,text("Bond: "+bond+"%   •   Food: "+food+"   •   Toys: "+toys,12f,true,dino.accent))
-        content.addView(p)
+        put(r2,button("🌙 SLEEP",Color.rgb(71,91,158)){rest();care()},-2,1f);put(r2,button("♥ PET",Color.rgb(153,74,126)){pet();care()},-2,1f);put(c,r2)
+        put(c,text("Bond "+bond+"%   •   Food "+food+"   •   Toys "+toys,12f,true,Color.rgb(221,239,222)));put(p,c);content.addView(p)
     }
+
     private fun choose(){
-        val p=page("CHOOSE DINOSAUR")
-        put(p,text("Choose your active dinosaur",16f,true,dino.accent))
-        dinos.forEach{choice->
-            val c=card()
-            put(c,dinoView(125,choice))
-            put(c,text((if(choice.id==selectedId)"✓ " else "")+choice.name,16f,true,choice.accent))
-            put(c,text("4 evolution stages",12f,false,Color.GRAY))
-            c.setOnClickListener{selectedId=choice.id;save();choose()}
-            put(p,c)
-        }
-        put(p,button("BACK HOME",Color.rgb(65,128,172)){home()})
+        val p=page("CHOOSE YOUR DINO");put(p,text("A loyal companion for your journey",14f,true,Color.rgb(255,222,139)))
+        dinos.forEach{choice->val c=card();put(c,dinoView(145,choice));put(c,text((if(choice.id==selectedId)"✓ ACTIVE  " else "")+choice.name,17f,true,choice.accent));put(c,text("Happy • Hungry • Energy • Playful",11f,false,Color.rgb(215,230,218)))
+            put(c,button(if(choice.id==selectedId)"SELECTED" else "SELECT",Color.rgb(75,161,62)){selectedId=choice.id;save();choose()});put(p,c)}
         content.addView(p)
     }
 
     private fun play(){
-        val p=page("PLAY")
-        val c=card()
-        put(c,text("Play with "+dinoName,18f,true,dino.accent))
-        put(c,text("Mini-games earn XP, coins and happiness.",12f,false,Color.rgb(75,105,115)))
-        put(c,dinoView(220))
-        put(c,text("MINI-GAMES",14f,true,dino.accent))
-        put(c,button("DINO DASH   +15 XP",Color.rgb(93,164,92)){
-            happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2;addXp(15);play()
-        })
-        put(c,button("PLAY BALL   +20 XP",Color.rgb(126,100,181)){
-            if(toys>0){toys--;happiness=min(100,happiness+18);energy=max(0,energy-8);bond=min(100,bond+8);coins+=4;addXp(20)}
-            else toast("Buy a toy first.")
-            play()
-        })
-        put(c,text("Coins: "+coins+"   •   XP: "+xp+"   •   Bond: "+bond+"%",12f,true,dino.accent))
-        content.addView(p)
-    }
-    private fun shop(){
-        val p=page("SHOP")
-        put(p,text("Dino Shop",20f,true,dino.accent))
-        put(p,text("Coins: "+coins+"   •   Gems: "+gems,13f,true,Color.rgb(75,105,115)))
-        buy(p,"FOOD PACK","3 meals • 10 coins"){if(coins>=10){coins-=10;food+=3;save();shop()}else toast("Not enough coins")}
-        buy(p,"TOY","1 toy • 18 coins"){if(coins>=18){coins-=18;toys++;save();shop()}else toast("Not enough coins")}
-        buy(p,"GEM","1 gem • 50 coins"){if(coins>=50){coins-=50;gems++;save();shop()}else toast("Not enough coins")}
-        buy(p,"XP BOOST","+50 XP • 35 coins"){if(coins>=35){coins-=35;addXp(50);shop()}else toast("Not enough coins")}
-        val daily=card()
-        put(daily,text("DAILY REWARD",15f,true,dino.accent))
-        put(daily,text("Claim a free coin for today's care session.",12f,false,Color.rgb(75,105,115)))
-        put(daily,button("FREE DAILY COIN",Color.rgb(190,130,67)){coins++;save();shop()})
-        put(p,daily)
-        content.addView(p)
-    }
-    private fun buy(p:LinearLayout,n:String,d:String,a:()->Unit){
-        val c=card()
-        put(c,text(n,16f,true,dino.accent))
-        put(c,text(d,12f,false,Color.rgb(75,105,115)))
-        put(c,button("BUY",Color.rgb(190,130,67)){a()})
-        put(p,c)
+        val p=page("PLAY GAMES");put(p,text("Fun mini-games to keep your Dino happy!",15f,true,Color.rgb(255,222,139)))
+        val games=listOf("🫧  BUBBLE POP","🍎  CATCH THE FOOD","🍌  FRUIT TOSS")
+        games.forEachIndexed{i,n->val c=card();put(c,text(n,18f,true,if(i==0)Color.rgb(102,199,255)else if(i==1)Color.rgb(255,192,72)else Color.rgb(134,239,74)));put(c,dinoView(150));put(c,text("Tap to play • earn coins, XP and happiness",11f,false,Color.rgb(220,235,221)));put(c,button("PLAY  •  +"+(15+i*5)+" XP",Color.rgb(73,164,60)){happiness=min(100,happiness+8);energy=max(0,energy-4);coins+=2+i;addXp(15+i*5);play()});put(p,c)}
+        put(p,text("Higher scores = better rewards!  🪙  🎁  ♥",13f,true,Color.rgb(255,222,139)));content.addView(p)
     }
 
+    private fun shop(){
+        val p=page("SHOP");put(p,text("Get food, toys, decorations and more!",15f,true,Color.rgb(255,222,139)))
+        put(p,text("🪙 "+coins+"    💎 "+gems,16f,true,Color.WHITE))
+        buy(p,"🍎 FOOD PACK","3 meals  •  10 coins",Color.rgb(74,155,67)){if(coins>=10){coins-=10;food+=3;save();shop()}else toast("Not enough coins")}
+        buy(p,"⚽ TOY","1 toy  •  18 coins",Color.rgb(91,105,180)){if(coins>=18){coins-=18;toys++;save();shop()}else toast("Not enough coins")}
+        buy(p,"💎 GROWTH GEM","1 gem  •  50 coins",Color.rgb(119,75,177)){if(coins>=50){coins-=50;gems++;save();shop()}else toast("Not enough coins")}
+        buy(p,"✨ XP BOOST","+50 XP  •  35 coins",Color.rgb(191,129,47)){if(coins>=35){coins-=35;addXp(50);shop()}else toast("Not enough coins")}
+        val daily=card();put(daily,text("DAILY REWARD",15f,true,Color.rgb(255,222,139)));put(daily,text("Free coin for today's care session",12f,false,Color.rgb(220,235,221)));put(daily,button("FREE DAILY COIN",Color.rgb(185,125,47)){coins++;save();shop()});put(p,daily);content.addView(p)
+    }
+    private fun buy(p:LinearLayout,n:String,d:String,color:Int,a:()->Unit){val c=card();put(c,text(n,17f,true,Color.WHITE));put(c,text(d,12f,false,Color.rgb(220,235,221)));put(c,button("BUY",color,a));put(p,c)}
+
     private fun inventory(){
-        val p=page("INVENTORY")
-        put(p,card().apply{put(this,text("FOOD: "+food,16f,true));put(this,text("Meals ready to use"))})
-        put(p,card().apply{put(this,text("TOYS: "+toys,16f,true));put(this,text("Play items"))})
-        put(p,card().apply{put(this,text("GEMS: "+gems,16f,true));put(this,text("Rare currency"))})
-        put(p,card().apply{put(this,text("COINS: "+coins,16f,true));put(this,text("Shop currency"))})
+        val p=page("INVENTORY");put(p,text("Items, food, toys, decorations & more!",14f,true,Color.rgb(255,222,139)))
+        val items=listOf("🍖 Dino Kibble" to food,"🍎 Apple" to food+2,"⚽ Beach Ball" to toys,"💎 Growth Crystal" to gems,"🦴 Bone Treat" to max(1,food+4),"🏆 Special Item" to max(1,gems))
+        for(start in items.indices step 2){val r=LinearLayout(this).apply{orientation=LinearLayout.HORIZONTAL};for(i in start until min(start+2,items.size)){val c=card();put(c,text(items[i].first,16f,true,Color.WHITE));put(c,text("x"+items[i].second,13f,true,Color.rgb(157,235,94)));put(c,button("USE",Color.rgb(67,136,163)){toast("Item used")},-2);r.addView(c,LinearLayout.LayoutParams(0,-2,1f).apply{if(i>start)marginStart=dp(4);if(i<start+1)marginEnd=dp(4)})};put(p,r)}
         content.addView(p)
     }
 
     private fun settings(){
-        val p=page("SETTINGS")
-        put(p,text("Dino Companion Settings",20f,true,dino.accent))
-        val nameCard=card()
-        put(nameCard,text("Dinosaur name",14f,true,dino.accent))
-        put(nameCard,text(dinoName,18f,true,Color.rgb(55,85,96)))
-        put(p,nameCard)
-        put(p,button("RENAME DINOSAUR",Color.rgb(65,128,172)){rename()})
-        val overlayCard=card()
-        put(overlayCard,text("FLOATING OVERLAY",14f,true,dino.accent))
-        put(overlayCard,text(if(overlayOn)"Your Dino can appear over other apps." else "Overlay is currently off.",12f,false,Color.rgb(75,105,115)))
-        put(overlayCard,button(if(overlayOn)"OVERLAY: ON" else "OVERLAY: OFF",Color.rgb(73,158,181)){overlaySettings()})
-        put(p,overlayCard)
-        put(p,button("RESET DINO",Color.rgb(170,79,78)){reset();home()})
-        put(p,text("Dino Companion 1.45",12f,false,Color.GRAY))
-        content.addView(p)
+        val p=page("SETTINGS");put(p,text("Dino Companion Settings",20f,true,Color.rgb(255,222,139)))
+        val name=card();put(name,text("YOUR DINO",14f,true,Color.rgb(157,235,94)));put(name,text(dinoName,21f,true,Color.WHITE));put(p,name)
+        put(p,button("✎  RENAME DINOSAUR",Color.rgb(65,128,172)){rename()})
+        val overlay=card();put(overlay,text("FLOATING COMPANION",15f,true,Color.rgb(157,235,94)));put(overlay,text(if(overlayOn)"Your Dino can appear over other apps." else "Overlay is currently off.",12f,false,Color.rgb(220,235,221)));put(overlay,button(if(overlayOn)"OVERLAY: ON" else "OVERLAY: OFF",Color.rgb(73,158,181)){overlaySettings()});put(p,overlay)
+        put(p,button("⚠  RESET DINO",Color.rgb(161,73,70)){reset();home()});put(p,text("Dino Companion 1.45",11f,false,Color.rgb(210,225,214)));content.addView(p)
     }
     private fun rename(){
         val e=EditText(this);e.setText(dinoName);e.selectAll()
@@ -1436,18 +1427,21 @@ layout_dir = root / "app/src/main/res/layout"
 layout_dir.mkdir(parents=True, exist_ok=True)
 (layout_dir / "activity_main.xml").write_text(r'''<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical" android:background="#E3F2FD">
-    <TextView android:id="@+id/pageTitle" android:layout_width="match_parent" android:layout_height="wrap_content"
-        android:padding="14dp" android:text="DINO COMPANION" android:textSize="23sp" android:textStyle="bold"
-        android:textColor="#2E7D32" android:gravity="center"/>
-    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:fillViewport="true"><FrameLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content"/></ScrollView>
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal"
-        android:padding="4dp" android:background="#FFFFFF">
-        <Button android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Home" android:textSize="10sp"/>
-        <Button android:id="@+id/navCare" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Care" android:textSize="10sp"/>
-        <Button android:id="@+id/navPlay" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Play" android:textSize="10sp"/>
-        <Button android:id="@+id/navShop" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="Shop" android:textSize="10sp"/>
-        <Button android:id="@+id/navMore" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="More" android:textSize="10sp"/>
+    android:orientation="vertical" android:background="#00000000" android:padding="4dp">
+    <TextView android:id="@+id/pageTitle" android:layout_width="match_parent" android:layout_height="78dp"
+        android:padding="8dp" android:text="DINO COMPANION" android:textSize="19sp" android:textStyle="bold"
+        android:textColor="#FFFFFF" android:gravity="center"/>
+    <ScrollView android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:fillViewport="true" android:background="#00000000" android:overScrollMode="never">
+        <FrameLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    </ScrollView>
+    <LinearLayout android:layout_width="match_parent" android:layout_height="72dp" android:orientation="horizontal"
+        android:padding="3dp" android:background="#D9152427">
+        <Button android:id="@+id/navHome" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="⌂\nHOME" android:textSize="10sp"/>
+        <Button android:id="@+id/navCare" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="♥\nCARE" android:textSize="10sp"/>
+        <Button android:id="@+id/navPlay" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="🎮\nPLAY" android:textSize="10sp"/>
+        <Button android:id="@+id/navShop" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="🛒\nSHOP" android:textSize="10sp"/>
+        <Button android:id="@+id/navMore" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:text="•••\nMORE" android:textSize="10sp"/>
     </LinearLayout>
 </LinearLayout>''',encoding="utf-8")
 main_path = root / "app/src/main/java/com/example/dinocompanion/MainActivity.kt"
