@@ -1091,8 +1091,20 @@ class MainActivity : Activity() {
     private fun stat(name:String,value:Int)=LinearLayout(this).apply{
         orientation=LinearLayout.VERTICAL
         addView(text(name+"  "+value+"%",11f,true))
-        addView(ProgressBar(this@MainActivity,null,android.R.attr.progressBarStyleHorizontal).apply{max=100;progress=value},
-            LinearLayout.LayoutParams(-1,dp(7)))
+        addView(ProgressBar(this@MainActivity,null,android.R.attr.progressBarStyleHorizontal).apply{
+            max=100
+            progress=value
+            progressTintList=android.content.res.ColorStateList.valueOf(
+                when(name){
+                    "Hunger" -> Color.rgb(242,165,62)
+                    "Happiness" -> Color.rgb(88,190,119)
+                    "Energy" -> Color.rgb(88,151,224)
+                    "Cleanliness" -> Color.rgb(85,189,202)
+                    "Bond" -> Color.rgb(174,101,190)
+                    else -> Color.rgb(73,158,181)
+                }
+            )
+        },LinearLayout.LayoutParams(-1,dp(8)))
     }
     private fun dinoView(h:Int,which:Dino=dino)=DinoView(this,which).apply{layoutParams=LinearLayout.LayoutParams(-1,dp(h))}
 
